@@ -1,0 +1,22 @@
+{
+  "name": "Bible Through Images - Lingo Power",
+  "short_name": "Bible Through Images",
+  "description": "Read all 31,102 Bible verses illustrated with SDXL-generated artwork, in 30+ languages. Includes per-verse images, text-to-speech, a 365-day reading plan, a study calendar, and favorites.",
+  "start_url": "./index.html",
+  "id": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EFEAE0",
+  "theme_color": "#B4872B",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["books", "education", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": []
+}

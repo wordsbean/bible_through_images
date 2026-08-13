@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>이미지로 읽는 다국어 성경 - Lingo Power | Bible Through Images</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#B4872B">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:        #EFEAE0;
+  --slip:         #FBF6E9;
+  --ink:          #24333F;
+  --ink-soft:     #5B6B74;
+  --teal:         #3C7A89;
+  --teal-deep:    #274C56;
+  --gold:         #B4872B;
+  --line:         #D8CFB8;
+  --shadow:       0 18px 40px -20px rgba(36,51,63,.35);
+  --f-display: 'Fraunces', serif;
+  --f-body:    'Literata', serif;
+  --f-ko:      'Noto Serif KR', serif;
+  --f-ui:      'Space Grotesk', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:radial-gradient(1200px 800px at 15% 0%, #F6F1E4 0%, var(--paper) 55%), var(--paper);
+  color:var(--ink); font-family:var(--f-body);
+  display:flex; overflow:hidden;
+}
+
+/* ============ 모바일 상단바 (데스크탑에선 숨김) ============ */
+#mobile-topbar{
+  display:none; align-items:center; gap:10px; padding:10px 14px;
+  background:var(--teal-deep); color:#fff; position:fixed; top:0; left:0; right:0; z-index:30;
+  font-family:var(--f-ui); font-size:14px; font-weight:600;
+}
+#btn-mobile-menu{ background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:2px 6px; }
+#sidebar-backdrop{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:15; }
+#sidebar-backdrop.show{ display:block; }
+
+/* ============ SIDEBAR ============ */
+#sidebar{
+  width:320px; min-width:320px; height:100vh; background:var(--teal-deep); color:#EDF3F1;
+  display:flex; flex-direction:column; box-shadow:6px 0 24px -10px rgba(0,0,0,.35); z-index:20;
+}
+.sb-brand{ padding:22px 20px 14px; border-bottom:1px solid rgba(255,255,255,.08); }
+.sb-brand .eyebrow{ font-family:var(--f-ui); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#8FB9BC; margin:0 0 4px; }
+.sb-brand h1{ font-family:var(--f-display); font-weight:600; font-size:22px; margin:0; color:#fff; }
+.sb-meta{ font-family:var(--f-ui); font-size:11.5px; color:#9FC2C4; margin-top:6px; }
+
+.sb-tabs{ display:flex; gap:4px; padding:10px 16px 0; }
+.sb-tab{
+  flex:1; padding:8px 6px; border-radius:8px 8px 0 0; background:transparent; border:none;
+  color:#B9D3D3; font-family:var(--f-ui); font-size:12.5px; cursor:pointer;
+}
+.sb-tab.active{ background:var(--paper); color:var(--teal-deep); font-weight:600; }
+.sb-panel{ display:none; flex:1; min-height:0; flex-direction:column; }
+.sb-panel.active{ display:flex; }
+
+#toc-search{
+  margin:14px 16px 8px; padding:9px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.15);
+  background:rgba(0,0,0,.15); color:#fff; font-family:var(--f-ui); font-size:13px; outline:none;
+}
+#toc-search::placeholder{ color:#8FB9BC; }
+#toc-list{ flex:1; overflow-y:auto; padding:4px 10px 20px; }
+#toc-list::-webkit-scrollbar{ width:8px; }
+#toc-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.2); border-radius:4px; }
+
+.toc-theme{ margin-bottom:2px; }
+.toc-theme-head{ display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; cursor:pointer; font-family:var(--f-ui); font-size:13px; color:#DCEBEA; }
+.toc-theme-head:hover{ background:rgba(255,255,255,.06); }
+.toc-theme-head .n{ color:#7FA9AD; font-size:11px; min-width:24px; }
+.toc-theme-head .t{ flex:1; }
+.toc-theme-head .c{ color:#7FA9AD; font-size:11px; }
+.toc-theme-head .arrow{ color:#7FA9AD; font-size:10px; transition:transform .15s; }
+.toc-theme.open .toc-theme-head .arrow{ transform:rotate(90deg); }
+.toc-scenes{ padding-left:34px; display:none; max-height:340px; overflow-y:auto; }
+.toc-theme.open .toc-scenes{ display:block; }
+.toc-scene{ padding:5px 8px; border-left:2px solid transparent; color:#B9D3D3; cursor:pointer; font-family:var(--f-ui); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.toc-scene:hover{ color:#fff; border-left-color:var(--gold); }
+.toc-scene.current{ color:var(--gold); border-left-color:var(--gold); font-weight:600; }
+
+/* ---- 설정 패널 ---- */
+#panel-settings{ padding:16px; overflow-y:auto; }
+.set-label{ font-family:var(--f-ui); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8FB9BC; margin:14px 0 8px; }
+.lang-chk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2px 6px; }
+.lang-chk-row{ display:flex; align-items:center; gap:6px; padding:5px 4px; font-family:var(--f-ui); font-size:12.5px; color:#EDF3F1; cursor:pointer; }
+.lang-chk-row input{ width:15px; height:15px; accent-color:var(--gold); flex-shrink:0; }
+.other-lang-row{ display:flex; gap:6px; }
+.other-lang-row input{ flex:1; padding:7px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.15); background:rgba(0,0,0,.15); color:#fff; font-family:var(--f-ui); font-size:12.5px; }
+.other-lang-row button{ padding:7px 12px; border-radius:8px; border:none; background:var(--gold); color:#2b2107; font-family:var(--f-ui); font-size:12px; font-weight:600; cursor:pointer; }
+#primary-lang-select{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.15); background:rgba(0,0,0,.15); color:#fff; font-family:var(--f-ui); font-size:13px; }
+.ui-lang-btn{ flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); color:#DCEBEA; font-family:var(--f-ui); font-size:12.5px; cursor:pointer; }
+.ui-lang-btn.active{ background:var(--gold); border-color:var(--gold); color:#2b2107; font-weight:600; }
+#other-lang-list{ margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; }
+.other-lang-chip{ display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.1); padding:4px 8px; border-radius:12px; font-family:var(--f-ui); font-size:11.5px; color:#EDF3F1; }
+.other-lang-chip button{ background:none; border:none; color:#B9D3D3; cursor:pointer; font-size:12px; padding:0; }
+.set-hint{ font-family:var(--f-ui); font-size:11px; color:#8FB9BC; margin-top:6px; line-height:1.5; }
+
+/* ---- 진행률 패널 (다크 사이드바용으로 색상 조정) ---- */
+#panel-progress{ padding:16px; overflow-y:auto; }
+.progress-scroll{ display:flex; flex-direction:column; }
+.cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.cal-nav-btn{ width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); color:#EDF3F1; font-size:14px; cursor:pointer; }
+.cal-nav-btn:hover{ background:rgba(255,255,255,.14); }
+.cal-month-title{ font-family:var(--f-ui); font-size:13px; font-weight:600; color:#EDF3F1; }
+.cal-weekday-row, .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-weekday-row{ margin-bottom:4px; }
+.cal-weekday{ text-align:center; font-family:var(--f-ui); font-size:10px; color:#8FB9BC; padding:2px 0; }
+.cal-day{ aspect-ratio:1; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--f-ui); font-size:11px; color:#DCEBEA; position:relative; }
+.cal-day.is-empty{ visibility:hidden; }
+.cal-day.has-study{ background:rgba(255,255,255,.1); cursor:pointer; font-weight:600; }
+.cal-day.has-study:hover{ background:rgba(255,255,255,.18); }
+.cal-day.is-today{ outline:2px solid var(--gold); outline-offset:-2px; }
+.cal-day-badge{ font-size:8.5px; color:#2b2107; background:var(--gold); border-radius:8px; padding:0 4px; margin-top:1px; }
+.cal-legend{ font-family:var(--f-ui); font-size:10.5px; color:#8FB9BC; margin-top:6px; line-height:1.4; }
+
+.book-prog-row{ padding:7px 2px; cursor:pointer; }
+.book-prog-row .bp-top{ display:flex; justify-content:space-between; font-family:var(--f-ui); font-size:12px; color:#DCEBEA; margin-bottom:4px; }
+.book-prog-row .bp-bar{ height:5px; border-radius:3px; background:rgba(255,255,255,.1); overflow:hidden; }
+.book-prog-row .bp-fill{ height:100%; background:var(--gold); }
+.book-prog-row:hover .bp-top{ color:#fff; }
+
+/* ---- 그리드뷰 (진행률에서 날짜/책 클릭시 메인영역에 표시) ---- */
+#grid-view{ display:none; flex:1; height:100vh; overflow-y:auto; padding:20px 28px 60px; }
+#grid-view.active{ display:block; }
+#grid-view.active ~ #center-panel, #grid-view.active ~ #right-panel{ display:none; }
+.grid-view-header{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.grid-view-header h2{ font-family:var(--f-display); font-size:19px; margin:0; color:var(--ink); flex:1; }
+.grid-view-header .gv-back{ background:var(--slip); border:1px solid var(--line); border-radius:8px; padding:7px 12px; font-family:var(--f-ui); font-size:12.5px; cursor:pointer; color:var(--ink); }
+.gv-table{ width:100%; border-collapse:collapse; }
+.gv-table th{ text-align:left; font-family:var(--f-ui); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); padding:6px 8px; border-bottom:1px solid var(--line); }
+.gv-table td{ padding:8px; border-bottom:1px solid var(--line); font-family:var(--f-ui); font-size:12.5px; vertical-align:middle; }
+
+/* ---- 묵상 간단히 보기 (이미지+합쳐진 본문+이전/오늘/다음 네비게이션) ---- */
+.devo-nav-header{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.devo-nav-header button{ padding:8px 14px; border-radius:8px; border:1px solid var(--line); background:var(--slip); font-family:var(--f-ui); font-size:12.5px; cursor:pointer; color:var(--ink); white-space:nowrap; }
+.devo-nav-header button:hover{ background:var(--paper-shade); }
+.devo-nav-header button#devo-today-btn{ background:var(--gold); border-color:var(--gold); color:#2b2107; font-weight:600; }
+.devo-nav-title{ flex:1; text-align:center; font-family:var(--f-display); font-size:17px; color:var(--ink); }
+.devo-combined-body{ max-width:1100px; margin:0 auto; display:flex; gap:32px; align-items:flex-start; }
+.devo-combined-img-box{ flex:0 0 380px; width:380px; aspect-ratio:1/1; border-radius:14px; overflow:hidden; box-shadow:var(--shadow); position:sticky; top:20px;
+  background:repeating-linear-gradient(45deg,#E4DDCC,#E4DDCC 10px,#DCD4BE 10px,#DCD4BE 20px); }
+.devo-combined-img-box img{ width:100%; height:100%; object-fit:cover; display:block; }
+.devo-combined-text{ flex:1; min-width:0; font-family:var(--f-ko); font-size:16px; line-height:1.9; color:var(--ink); max-height:calc(100vh - 140px); overflow-y:auto; padding-right:8px; }
+.devo-combined-text p{ margin:0 0 14px; text-indent:1.2em; }
+.devo-combined-text.is-en p:first-child::first-letter{ font-family:var(--f-display); font-size:2.6em; font-weight:600; float:left; line-height:0.85; padding-right:6px; padding-top:4px; color:var(--gold); }
+.verse-cite{ font-family:var(--f-ui); font-size:11.5px; color:var(--ink-soft); font-style:normal; margin-left:6px; white-space:nowrap; }
+.devo-combined-text p.reading-now{ background:rgba(180,135,43,.14); border-radius:6px; box-shadow:-4px 0 0 var(--gold); padding:4px 8px 4px 10px; margin-left:-10px; transition:background .2s; }
+.devo-combined-loading{ font-family:var(--f-ui); color:var(--ink-soft); font-size:13px; text-align:center; margin-top:60px; }
+.devo-tts-controls{ position:absolute; bottom:12px; right:12px; z-index:3; display:flex; align-items:center; gap:6px; }
+#devo-tts-btn{
+  width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.16); color:#fff; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px);
+}
+#devo-tts-btn:hover{ background:rgba(255,255,255,.28); }
+#devo-tts-btn.playing{ background:rgba(180,135,43,.55); border-color:rgba(180,135,43,.7); }
+.devo-tts-speed{
+  display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.35);
+  border-radius:16px; padding:2px 4px; backdrop-filter:blur(3px);
+}
+.devo-tts-speed button{
+  width:22px; height:22px; border-radius:50%; border:none; background:transparent; color:#fff;
+  font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.devo-tts-speed button:hover{ background:rgba(255,255,255,.25); }
+.devo-tts-speed span{ font-family:var(--f-ui); font-size:10px; color:#fff; min-width:26px; text-align:center; }
+
+@media screen and (max-width:860px){
+  .devo-combined-body{ flex-direction:column; }
+  .devo-combined-img-box{ position:static; width:100%; flex:none; }
+}
+.gv-row{ cursor:pointer; }
+.gv-row:hover{ background:var(--slip); }
+.gv-row.is-unread{ opacity:.5; }
+.gv-thumb{ width:46px; height:46px; border-radius:6px; object-fit:cover; display:block; background:#E4DDCC; }
+.gv-text{ font-family:var(--f-ko); font-size:13px; max-width:360px; }
+.gv-status{ font-size:11px; }
+.gv-status.read{ color:var(--sage); }
+.gv-status.unread{ color:var(--ink-soft); }
+
+#back-to-source{
+  display:none; align-items:center; gap:6px; background:var(--teal); color:#fff; border:none;
+  border-radius:8px; padding:6px 12px; font-family:var(--f-ui); font-size:11.5px; cursor:pointer; margin-right:10px;
+}
+#back-to-source.show{ display:inline-flex; }
+
+/* ---- 히어로 이미지 위 캡처(투명) 버튼 ---- */
+#btn-capture{
+  position:absolute; top:10px; right:10px; z-index:3;
+  width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.5);
+  background:rgba(0,0,0,.28); color:#fff; font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px);
+}
+#btn-capture:hover{ background:rgba(0,0,0,.5); }
+#btn-autoscroll{
+  margin-top:16px; width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08); color:#fff; font-family:var(--f-ui); font-size:13px; cursor:pointer;
+}
+#btn-autoscroll.on{ background:var(--gold); border-color:var(--gold); color:#2b2107; font-weight:600; }
+.speed-row{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+.speed-row label{ font-family:var(--f-ui); font-size:11.5px; color:#B9D3D3; }
+.speed-row input[type=range]{ flex:1; }
+
+/* ============ MAIN — 가운데: 큰 이미지+썸네일그리드(40%) / 우측: 텍스트 피드(40%) ============ */
+#main{ flex:2; height:100vh; overflow:hidden; display:flex; }
+
+#center-panel{ flex:1; height:100vh; overflow-y:auto; padding:20px 20px 60px; border-right:1px solid var(--line); }
+#hero-wrap{ position:sticky; top:0; background:var(--paper); padding-bottom:14px; z-index:2; }
+#hero-ref{ font-family:var(--f-ui); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+#hero-image-box{
+  width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
+  background:repeating-linear-gradient(45deg,#E4DDCC,#E4DDCC 10px,#DCD4BE 10px,#DCD4BE 20px);
+  position:relative;
+}
+#hero-image-box img{ width:100%; height:100%; object-fit:cover; display:block; transition:opacity .15s; }
+#hero-image-box .ph-text{ display:flex; align-items:center; justify-content:center; height:100%; color:var(--ink-soft); font-family:var(--f-ui); font-size:13px; }
+#hero-caption{
+  position:absolute; left:0; right:0; bottom:0; padding:14px 16px 12px;
+  background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0));
+  color:#fff; font-family:var(--f-ko); font-size:var(--caption-size, 15px); line-height:1.5;
+  text-shadow:0 1px 3px rgba(0,0,0,.6); white-space:pre-line;
+}
+#hero-caption:empty{ display:none; }
+.ph-badge{
+  position:absolute; top:10px; left:10px; z-index:3;
+  background:rgba(180,135,43,.9); color:#fff; font-family:var(--f-ui); font-size:11px; font-weight:600;
+  padding:4px 9px; border-radius:12px; backdrop-filter:blur(2px); letter-spacing:.02em;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+}
+.speaking-indicator{ display:inline-block; margin-left:6px; }
+.fontsize-row{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+.fontsize-row button{ width:30px; height:30px; border-radius:8px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:#fff; font-family:var(--f-ui); font-size:15px; cursor:pointer; }
+.fontsize-row span{ font-family:var(--f-ui); font-size:12px; color:#B9D3D3; min-width:36px; text-align:center; }
+
+#thumb-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(64px,1fr)); gap:6px; margin-top:14px; }
+.thumb{ aspect-ratio:1/1; border-radius:6px; overflow:hidden; cursor:pointer; opacity:.55; border:2px solid transparent;
+  background:repeating-linear-gradient(45deg,#E4DDCC,#E4DDCC 6px,#DCD4BE 6px,#DCD4BE 12px); }
+.thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.thumb:hover{ opacity:.85; }
+.thumb.active{ opacity:1; border-color:var(--gold); }
+
+#right-panel{ flex:1; height:100vh; overflow-y:auto; padding:20px 26px 60px; scroll-behavior:auto; }
+#feed-header{ padding:0 0 14px; font-family:var(--f-ui); font-size:13px; color:var(--ink-soft); display:flex; justify-content:space-between; align-items:center; }
+#feed-header .book-title{ font-family:var(--f-display); font-size:18px; font-weight:600; color:var(--ink); }
+#feed-empty{ color:var(--ink-soft); font-family:var(--f-ui); font-size:14px; margin-top:80px; text-align:center; }
+
+.feed-row{ padding:14px 12px; border-radius:8px; border-bottom:1px dashed var(--line); cursor:pointer; }
+.devo-back-row{ padding:14px 12px; border-radius:8px; border-bottom:1px solid var(--line); cursor:pointer; background:var(--slip); }
+.devo-back-row:hover{ background:var(--paper-shade); }
+.feed-row.active-row{ background:var(--slip); box-shadow:0 2px 10px -4px rgba(36,51,63,.2); }
+.feed-row .row-ref{ font-family:var(--f-ui); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
+.feed-row .lang-line{ margin-bottom:6px; min-height:44px; }
+.feed-row .lang-line .tag{ display:inline-block; font-family:var(--f-ui); font-size:9px; letter-spacing:.06em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:8px; margin-right:6px; vertical-align:middle; }
+.feed-row .lang-line .txt{ font-family:var(--f-ko); font-size:14.5px; line-height:1.6; color:var(--ink); white-space:pre-line; }
+.feed-row .lang-line .txt.pending{ color:var(--ink-soft); font-style:italic; }
+
+/* ============ 반응형: 모바일에서 사이드바 감춤 + 중앙/우측 세로로 쌓임 ============ */
+@media screen and (max-width: 860px){
+  body{ padding-top:48px; }
+  #mobile-topbar{ display:flex; }
+  #sidebar{
+    position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%);
+    transition:transform .2s ease;
+  }
+  #sidebar.mobile-open{ transform:translateX(0); }
+  #main{ flex-direction:column; overflow-y:auto; }
+  #center-panel, #right-panel{ height:auto; overflow:visible; border-right:none; }
+  #hero-wrap{ position:static; }
+}
+</style>
+</head>
+<body>
+
+<div id="mobile-topbar">
+  <button id="btn-mobile-menu">☰</button>
+  <span>Bible Image Gallery</span>
+</div>
+<div id="sidebar-backdrop"></div>
+
+<div id="sidebar">
+  <div class="sb-brand">
+    <p class="eyebrow">Bible Image Gallery</p>
+    <h1 data-i18n="brandTitle">66권 목차</h1>
+    <div class="sb-meta" id="sb-total" data-i18n="loading">불러오는 중…</div>
+    <div style="font-family:var(--f-ui);font-size:10px;color:#5a8a8f;margin-top:2px;">build 2026-08-02-v16 (윈도우번역OFF-원인격리)</div>
+  </div>
+  <div class="sb-tabs">
+    <button class="sb-tab active" data-tab="toc" data-i18n="tabToc">목차</button>
+    <button class="sb-tab" data-tab="progress" data-i18n="tabProgress">진행률</button>
+    <button class="sb-tab" data-tab="devotional" data-i18n="tabDevotional">묵상</button>
+    <button class="sb-tab" data-tab="settings" data-i18n="tabSettings">설정</button>
+  </div>
+
+  <div class="sb-panel active" id="panel-toc">
+    <input id="toc-search" data-i18n-placeholder="tocSearchPlaceholder" placeholder="책 이름 검색… (예: 시편)" />
+    <div id="toc-list"></div>
+  </div>
+
+  <div class="sb-panel" id="panel-devotional">
+    <div style="padding:16px;">
+      <div class="set-label" data-i18n="devoToday">오늘의 묵상</div>
+      <div id="devo-today-preview" style="color:#DCEBEA;font-family:var(--f-ui);font-size:13px;line-height:1.6;" data-i18n="loading">불러오는 중…</div>
+      <button id="btn-open-devotional" style="margin-top:14px;width:100%;padding:10px;border-radius:8px;border:none;background:var(--gold);color:#2b2107;font-family:var(--f-ui);font-size:13px;font-weight:600;cursor:pointer;" data-i18n="devoOpenList">📖 365일 묵상 목록 열기</button>
+      <button id="btn-open-devotional-simple" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:var(--f-ui);font-size:13px;font-weight:600;cursor:pointer;" data-i18n="devoOpenSimple">📄 오늘 묵상 간단히 보기</button>
+      <div class="set-hint" data-i18n="devoHint">1년 통독표(연대기순) 기준, 365일 전체를 오른쪽에서 훑어보고 클릭하면 그날 본문 이미지가 가운데에 뜹니다.</div>
+    </div>
+  </div>
+
+  <div class="sb-panel" id="panel-progress">
+    <div class="progress-scroll">
+      <div class="cal-header">
+        <button class="cal-nav-btn" id="cal-prev-month">‹</button>
+        <span class="cal-month-title" id="cal-month-title"></span>
+        <button class="cal-nav-btn" id="cal-next-month">›</button>
+      </div>
+      <div class="cal-weekday-row" id="cal-weekday-row"></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend" data-i18n="calLegend">숫자 = 그날 읽은 구절 수. 날짜 클릭하면 목록이 열립니다.</div>
+
+      <div class="set-label" style="margin-top:20px;" data-i18n="bookProgress">책별 진행률</div>
+      <div id="book-progress-list"></div>
+    </div>
+  </div>
+
+  <div class="sb-panel" id="panel-settings">
+    <div class="set-label" data-i18n="uiLangLabel">화면 언어</div>
+    <div class="fontsize-row" style="margin-bottom:4px;">
+      <button id="ui-lang-ko" class="ui-lang-btn">한국어</button>
+      <button id="ui-lang-en" class="ui-lang-btn">English</button>
+    </div>
+
+    <div class="set-label" data-i18n="displayLangLabel">표시 언어 (대표 30개)</div>
+    <div id="lang-chk-grid" class="lang-chk-grid"></div>
+
+    <div class="set-label" data-i18n="overlayLangLabel">이미지 오버레이 자막 언어</div>
+    <select id="primary-lang-select"></select>
+    <div class="set-hint" data-i18n="overlayLangHint">체크한 언어 중에서 이미지 위에 크게 표시할 언어 하나를 고르세요.</div>
+
+    <div class="set-label" data-i18n="otherLangLabel">기타 언어</div>
+    <div class="other-lang-row">
+      <input id="other-lang-code" data-i18n-placeholder="otherLangPlaceholder" placeholder="언어코드 (예: fa, sw, bn)" maxlength="6" />
+      <button id="btn-add-other-lang" data-i18n="addBtn">추가</button>
+    </div>
+    <div class="set-hint" data-i18n="otherLangHint">30개에 없는 언어는 <a href="https://cloud.google.com/translate/docs/languages" target="_blank" style="color:#B9D3D3;">ISO 언어코드표</a> 참고해서 코드 입력 (예: 페르시아어=fa)</div>
+
+    <div class="set-label" data-i18n="romanizeLabel">한중일 로마자/병음</div>
+    <label class="lang-chk-row"><input type="checkbox" id="chk-romanize"> <span data-i18n="romanizeChk">원문 + 로마자/병음 같이 표시</span></label>
+    <div class="set-hint" data-i18n="romanizeHint">한국어·일본어·중국어에만 적용됩니다 (로마자 데이터가 있는 언어라서).</div>
+
+    <div class="set-label" data-i18n="ttsLabel">읽어주기 (TTS)</div>
+    <label class="lang-chk-row"><input type="checkbox" id="chk-tts"> <span data-i18n="ttsChk">활성 구절 자동으로 읽어주기</span></label>
+    <div class="set-hint" data-i18n="ttsHint">체크한 언어 전부 순서대로 읽습니다 (예: 한/중/일/영 체크 시 한→중→일→영 순). 다 읽어야 가운데 이미지가 바뀝니다 (꺼져있으면 스크롤에 맞춰 바로 바뀜).</div>
+
+    <div class="set-label" data-i18n="captionSizeLabel">이미지 위 자막 크기</div>
+    <div class="fontsize-row">
+      <button id="btn-caption-smaller">−</button>
+      <span id="caption-size-label">15px</span>
+      <button id="btn-caption-bigger">+</button>
+    </div>
+
+    <div class="set-label" style="margin-top:22px;" data-i18n="autoscrollLabel">자동 스크롤</div>
+    <button id="btn-autoscroll" data-i18n="autoscrollStart">▶ 자동 스크롤 시작</button>
+    <div class="speed-row">
+      <label data-i18n="speedLabel">속도</label>
+      <input type="range" id="scroll-speed" min="1" max="10" value="3">
+    </div>
+    <div class="speed-row">
+      <label data-i18n="readDelayLabel">구절당 대기(초)</label>
+      <input type="range" id="read-delay" min="1" max="10" value="3">
+      <span id="read-delay-label" style="font-family:var(--f-ui);font-size:11px;color:#B9D3D3;min-width:24px;">3초</span>
+    </div>
+    <div class="set-hint" data-i18n="readDelayHint">TTS가 꺼져있을 때, 구절이 바뀌면 이 시간만큼 멈췄다가 다시 스크롤됩니다 (짧은 구절이 순식간에 지나가는 것 방지). TTS 켜져있으면 이 설정 대신 읽는 시간만큼 자동으로 멈춥니다.</div>
+    <div class="set-hint" data-i18n="autoscrollHint">수동으로 스크롤하면 자동 스크롤은 잠시 멈춥니다.</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="grid-view"></div>
+  <div id="center-panel">
+    <div id="hero-wrap">
+      <div id="hero-ref" data-i18n="selectBook">책을 선택하세요</div>
+      <div id="hero-image-box">
+        <div class="ph-text" data-i18n="selectBookHint">왼쪽 목차에서 책을 선택하세요</div>
+        <button id="btn-capture" title="현재 이미지 저장">📷</button>
+        <div class="devo-tts-controls">
+          <div class="devo-tts-speed">
+            <button id="hero-speed-down">−</button>
+            <span id="hero-speed-label">1.0x</span>
+            <button id="hero-speed-up">+</button>
+          </div>
+          <button id="hero-tts-btn" title="이 구절 읽어주기">🔊</button>
+        </div>
+        <div id="hero-caption"></div>
+      </div>
+    </div>
+    <div id="thumb-grid"></div>
+  </div>
+  <div id="right-panel">
+    <div id="feed-header">
+      <button id="back-to-source"></button>
+      <span class="book-title" id="current-book-title"></span>
+      <span id="feed-progress"></span>
+    </div>
+    <div id="feed">
+      <div id="feed-empty" data-i18n="selectBookHint">왼쪽 목차에서 책을 선택하세요</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TRANSLATE_CACHE_KEY = 'bible_gallery_translate_cache_v1';
+const LANG_PREF_KEY = 'bible_gallery_lang_pref_v1';
+const OTHER_LANG_KEY = 'bible_gallery_other_langs_v1';
+const ROMANIZE_KEY = 'bible_gallery_romanize_v1';
+const TTS_KEY = 'bible_gallery_tts_v1';
+/* ══════════════════════════════════════════════════════════
+   화면 UI 현지화 (KO/EN) - TOPIK/Word Roots Made Easy와 동일한 I18N 모듈 패턴
+   사용법: HTML data-i18n="key" / data-i18n-placeholder="key" / data-i18n-title="key"
+          JS: I18N.t('key', {n: 3}) -> 현재 언어 문자열 반환 ({n} 치환)
+   ══════════════════════════════════════════════════════════ */
+const I18N = (function(){
+  const UI_LANG_KEY = 'bible_gallery_ui_lang_v1';
+
+  const DICT = {
+    brandTitle: { ko: '66권 목차', en: '66 Books' },
+    loading: { ko: '불러오는 중…', en: 'Loading…' },
+    tabToc: { ko: '목차', en: 'Books' }, tabProgress: { ko: '진행률', en: 'Progress' },
+    tabDevotional: { ko: '묵상', en: 'Devotional' }, tabSettings: { ko: '설정', en: 'Settings' },
+    tocSearchPlaceholder: { ko: '책 이름 검색… (예: 시편)', en: 'Search book… (e.g. Psalms)' },
+
+    devoToday: { ko: '오늘의 묵상', en: "Today's Devotional" },
+    devoOpenList: { ko: '📖 365일 묵상 목록 열기', en: '📖 Open 365-Day List' },
+    devoOpenSimple: { ko: '📄 오늘 묵상 간단히 보기', en: '📄 Simple Daily View' },
+    devoHint: { ko: '1년 통독표(연대기순) 기준, 365일 전체를 오른쪽에서 훑어보고 클릭하면 그날 본문 이미지가 가운데에 뜹니다.',
+                en: 'Based on a 1-year chronological reading plan. Browse all 365 days on the right; click a day to see its images in the center.' },
+    dayLabel: { ko: '{n}일차', en: 'Day {n}' },
+    todayTag: { ko: '오늘', en: 'Today' },
+    devoRangeCount: { ko: '{n}구간', en: '{n} passages' },
+    devoTotalVerses: { ko: '총 {n}구절', en: '{n} verses total' },
+    devoTitle: { ko: '{day} 묵상', en: '{day} Devotional' },
+    backToList: { ko: '← {label} 목록으로', en: '← Back to {label} list' },
+    backTo365: { ko: '← 365일 목록으로', en: '← Back to 365-day list' },
+
+    calLegend: { ko: '숫자 = 그날 읽은 구절 수. 날짜 클릭하면 목록이 열립니다.', en: 'Numbers = verses read that day. Click a date to open the list.' },
+    bookProgress: { ko: '책별 진행률', en: 'Progress by Book' },
+
+    uiLangLabel: { ko: '화면 언어', en: 'Display Language' },
+    displayLangLabel: { ko: '표시 언어 (대표 30개)', en: 'Verse Languages (top 30)' },
+    overlayLangLabel: { ko: '이미지 오버레이 자막 언어', en: 'Image Overlay Language' },
+    overlayLangHint: { ko: '체크한 언어 중에서 이미지 위에 크게 표시할 언어 하나를 고르세요.', en: 'Pick one checked language to show large on the image.' },
+    otherLangLabel: { ko: '기타 언어', en: 'Other Languages' },
+    otherLangPlaceholder: { ko: '언어코드 (예: fa, sw, bn)', en: 'Language code (e.g. fa, sw, bn)' },
+    addBtn: { ko: '추가', en: 'Add' },
+    otherLangHint: { ko: '30개에 없는 언어는 ISO 언어코드표 참고해서 코드 입력 (예: 페르시아어=fa)', en: 'For languages not in the 30, check the ISO language code list (e.g. Persian=fa)' },
+    romanizeLabel: { ko: '한중일 로마자/병음', en: 'KO/JA/ZH Romanization' },
+    romanizeChk: { ko: '원문 + 로마자/병음 같이 표시', en: 'Show original + romanization together' },
+    romanizeHint: { ko: '한국어·일본어·중국어에만 적용됩니다 (로마자 데이터가 있는 언어라서).', en: 'Applies only to Korean, Japanese, and Chinese (only these have romanization data).' },
+    ttsLabel: { ko: '읽어주기 (TTS)', en: 'Read Aloud (TTS)' },
+    ttsChk: { ko: '활성 구절 자동으로 읽어주기', en: 'Auto-read the active verse' },
+    ttsHint: { ko: '체크한 언어 전부 순서대로 읽습니다 (예: 한/중/일/영 체크 시 한→중→일→영 순). 다 읽어야 가운데 이미지가 바뀝니다 (꺼져있으면 스크롤에 맞춰 바로 바뀜).',
+               en: 'Reads all checked languages in order. Waits for all to finish before changing the image (if off, image follows scroll immediately).' },
+    captionSizeLabel: { ko: '이미지 위 자막 크기', en: 'Overlay Text Size' },
+    autoscrollLabel: { ko: '자동 스크롤', en: 'Auto-Scroll' },
+    autoscrollStart: { ko: '▶ 자동 스크롤 시작', en: '▶ Start Auto-Scroll' },
+    autoscrollStop: { ko: '⏸ 자동 스크롤 정지', en: '⏸ Stop Auto-Scroll' },
+    speedLabel: { ko: '속도', en: 'Speed' },
+    readDelayLabel: { ko: '구절당 대기(초)', en: 'Pause per verse (sec)' },
+    readDelayHint: { ko: 'TTS가 꺼져있을 때, 구절이 바뀌면 이 시간만큼 멈췄다가 다시 스크롤됩니다 (짧은 구절이 순식간에 지나가는 것 방지). TTS 켜져있으면 이 설정 대신 읽는 시간만큼 자동으로 멈춥니다.',
+                    en: 'When TTS is off, scrolling pauses this long on each new verse (prevents short verses flashing by). When TTS is on, it waits for the reading instead.' },
+    autoscrollHint: { ko: '수동으로 스크롤하면 자동 스크롤은 잠시 멈춥니다.', en: 'Manually scrolling briefly pauses auto-scroll.' },
+
+    selectBook: { ko: '책을 선택하세요', en: 'Select a book' },
+    selectBookHint: { ko: '왼쪽 목차에서 책을 선택하세요', en: 'Choose a book from the list on the left' },
+    imageNotReady: { ko: '🖼 아직 생성 안 됨', en: '🖼 Not generated yet' },
+    placeholderImageBadge: { ko: '🖼 같은 책의 다른 이미지', en: '🖼 Image from elsewhere in this book' },
+
+    gridColBook: { ko: '책', en: 'Book' }, gridColVerse: { ko: '구절', en: 'Verse' },
+    gridColThumb: { ko: '썸네일', en: 'Image' }, gridColText: { ko: '본문', en: 'Text' }, gridColStatus: { ko: '상태', en: 'Status' },
+    gridClose: { ko: '← 닫기', en: '← Close' },
+    statusRead: { ko: '✓ 읽음', en: '✓ Read' }, statusUnread: { ko: '미열람', en: 'Unread' },
+
+    navPrevDay: { ko: '‹ 이전일자', en: '‹ Previous' }, navNextDay: { ko: '다음일자 ›', en: 'Next ›' }, navToday: { ko: '오늘', en: 'Today' },
+  };
+
+  function getUILang(){ try{ return localStorage.getItem(UI_LANG_KEY) || 'ko'; }catch(e){ return 'ko'; } }
+
+  function t(key, params){
+    const lang = getUILang();
+    const entry = DICT[key];
+    let str = entry ? (entry[lang] || entry.ko || key) : key;
+    if (params) Object.keys(params).forEach(k => { str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]); });
+    return str;
+  }
+
+  function applyUILang(lang){
+    if (lang !== 'ko' && lang !== 'en') lang = getUILang();
+    try { localStorage.setItem(UI_LANG_KEY, lang); } catch(e){}
+    document.querySelectorAll('[data-i18n]').forEach(el => { if (DICT[el.dataset.i18n]) el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { if (DICT[el.dataset.i18nPlaceholder]) el.placeholder = t(el.dataset.i18nPlaceholder); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { if (DICT[el.dataset.i18nTitle]) el.title = t(el.dataset.i18nTitle); });
+    const koBtn = document.getElementById('ui-lang-ko'), enBtn = document.getElementById('ui-lang-en');
+    if (koBtn) koBtn.classList.toggle('active', lang === 'ko');
+    if (enBtn) enBtn.classList.toggle('active', lang === 'en');
+    document.documentElement.lang = lang;
+    document.dispatchEvent(new CustomEvent('uilangchange', { detail: { lang } }));
+  }
+
+  const MONTH_KEYS_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const MONTH_KEYS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WEEKDAY_KO = ['일','월','화','수','목','금','토'];
+  const WEEKDAY_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function monthTitle(year, monthIndex0){
+    const lang = getUILang();
+    return lang === 'en' ? `${MONTH_KEYS_EN[monthIndex0]} ${year}` : `${year}년 ${MONTH_KEYS_KO[monthIndex0]}`;
+  }
+  function weekdayNames(){ return getUILang() === 'en' ? WEEKDAY_EN : WEEKDAY_KO; }
+
+  return { t, getUILang, applyUILang, monthTitle, weekdayNames, DICT };
+})();
+document.getElementById('ui-lang-ko').addEventListener('click', () => I18N.applyUILang('ko'));
+document.getElementById('ui-lang-en').addEventListener('click', () => I18N.applyUILang('en'));
+I18N.applyUILang(I18N.getUILang());
+document.addEventListener('uilangchange', () => { if (calYear) renderCalendar(calYear, calMonth); }); // 캘린더 월/요일도 언어전환시 갱신
+
+/* ══════════════════════════════════════════════════════════
+   한글 로마자 변환 (TOPIK/Lingo Power 공통모듈 romanize.js 그대로 내장)
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  const RR_CHO_LIST = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const RR_JUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+  const RR_JONG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const RR_CHO = { 'ㄱ':'g','ㄲ':'kk','ㄴ':'n','ㄷ':'d','ㄸ':'tt','ㄹ':'r','ㅁ':'m','ㅂ':'b','ㅃ':'pp','ㅅ':'s','ㅆ':'ss','ㅇ':'','ㅈ':'j','ㅉ':'jj','ㅊ':'ch','ㅋ':'k','ㅌ':'t','ㅍ':'p','ㅎ':'h' };
+  const RR_JUNG = { 'ㅏ':'a','ㅐ':'ae','ㅑ':'ya','ㅒ':'yae','ㅓ':'eo','ㅔ':'e','ㅕ':'yeo','ㅖ':'ye','ㅗ':'o','ㅘ':'wa','ㅙ':'wae','ㅚ':'oe','ㅛ':'yo','ㅜ':'u','ㅝ':'wo','ㅞ':'we','ㅟ':'wi','ㅠ':'yu','ㅡ':'eu','ㅢ':'ui','ㅣ':'i' };
+  const RR_JONG = { '':'','ㄱ':'k','ㄲ':'k','ㄳ':'k','ㄴ':'n','ㄵ':'n','ㄶ':'n','ㄷ':'t','ㄹ':'l','ㄺ':'k','ㄻ':'m','ㄼ':'l','ㄽ':'l','ㄾ':'l','ㄿ':'p','ㅀ':'l','ㅁ':'m','ㅂ':'p','ㅄ':'p','ㅅ':'t','ㅆ':'t','ㅇ':'ng','ㅈ':'t','ㅊ':'t','ㅋ':'k','ㅌ':'t','ㅍ':'p','ㅎ':'t' };
+  const RR_LIAISON = { 'ㄱ':'g','ㄲ':'kk','ㄴ':'n','ㄷ':'d','ㄹ':'r','ㅁ':'m','ㅂ':'b','ㅅ':'s','ㅆ':'ss','ㅈ':'j','ㅊ':'ch','ㅋ':'k','ㅌ':'t','ㅍ':'p','ㅎ':'h' };
+  const DOUBLE_JONG_SPLIT = {
+    'ㄳ': ['ㄱ','ㅅ'], 'ㄵ': ['ㄴ','ㅈ'], 'ㄶ': ['ㄴ','ㅎ'], 'ㄺ': ['ㄹ','ㄱ'], 'ㄻ': ['ㄹ','ㅁ'],
+    'ㄼ': ['ㄹ','ㅂ'], 'ㄽ': ['ㄹ','ㅅ'], 'ㄾ': ['ㄹ','ㅌ'], 'ㄿ': ['ㄹ','ㅍ'], 'ㅀ': ['ㄹ','ㅎ'], 'ㅄ': ['ㅂ','ㅅ'],
+  };
+  const ROMANIZATION_OVERRIDES = { "한글": "Hangul", "김치": "Kimchi", "태권도": "Taekwondo" };
+
+  function decomposeSyllables(word) {
+    const syllables = [];
+    for (const ch of word) {
+      const code = ch.codePointAt(0) - 0xAC00;
+      if (code < 0 || code > 11171) continue;
+      syllables.push({
+        cho: RR_CHO_LIST[Math.floor(code / (21 * 28))],
+        jung: RR_JUNG_LIST[Math.floor((code % (21 * 28)) / 28)],
+        jong: RR_JONG_LIST[code % 28],
+      });
+    }
+    return syllables;
+  }
+  function applyDoubleBatchimLiaison(syllables) {
+    const result = syllables.map(s => ({ ...s }));
+    for (let i = 0; i < result.length - 1; i++) {
+      const cur = result[i], next = result[i + 1];
+      const split = DOUBLE_JONG_SPLIT[cur.jong];
+      if (split && next.cho === 'ㅇ') { cur.jong = split[0]; next.cho = split[1]; }
+    }
+    return result;
+  }
+  function romanizeSyllable(syl, next) {
+    let out = RR_CHO[syl.cho] + RR_JUNG[syl.jung];
+    if (syl.jong) {
+      if (next && next.cho === 'ㅇ' && syl.jong !== 'ㅇ' && RR_LIAISON[syl.jong]) out += RR_LIAISON[syl.jong];
+      else out += RR_JONG[syl.jong] || '';
+    }
+    return out;
+  }
+  function romanizeWord(word) {
+    if (!word) return '';
+    if (ROMANIZATION_OVERRIDES[word]) return ROMANIZATION_OVERRIDES[word];
+    const syllables = applyDoubleBatchimLiaison(decomposeSyllables(word));
+    let out = '';
+    syllables.forEach((syl, i) => { out += romanizeSyllable(syl, syllables[i + 1]); });
+    return out;
+  }
+  function romanizeSentence(text) {
+    if (!text) return '';
+    return text.replace(/[가-힣]+/g, (chunk) => romanizeWord(chunk));
+  }
+  window.romanizeWord = romanizeWord;
+  window.romanizeSentence = romanizeSentence;
+})();
+
+const IMAGES_BASE_PATH = 'images/';
+const DATA_BASE_PATH = 'bible_data/';
+
+// WebP 우선 로드 → 실패하면 원본 PNG로 자동 폴백 (변환 스크립트 아직 안 돌린 이미지도 안전하게 표시됨)
+// 썸네일 그리드(64px/46px)에서 풀사이즈 원본을 그대로 쓰면 대역폭 낭비가 커서, generate_thumbnails.py로
+// 미리 만들어둔 "_thumb.webp"(200x200)를 우선 사용하고, 혹시 없으면 원본으로 자동 폴백합니다.
+function webpName(filename, variant){
+  const stem = filename.replace(/\.png$/i, '');
+  return variant === 'thumb' ? `${stem}_thumb.webp` : `${stem}.webp`;
+}
+let knownGoodImages = []; // 대체이미지 후보 풀 - 부모매핑에 없는 극히 예외적인 경우의 최후 폴백용
+let webpSupported = true;   // webp 파일이 실제로 존재하는지 - 처음 실패하면 꺼서 이후 요청 절반으로 줄임
+let webpCheckDone = false;
+let familyParentMap = {}; // ref -> 그 절이 속한 "가족"의 대표(부모) 이미지 파일명 (유사도 기반, full_bible_family_clusters.csv에서 생성)
+
+// 창세기는 이미 다 생성돼있는 책이라, 대체이미지 후보 풀을 여기서 미리 채워둠 (최후의 최후 폴백용)
+(async function seedKnownGoodImages(){
+  try {
+    const res = await fetch(DATA_BASE_PATH + 'Gen.json');
+    const genVerses = await res.json();
+    knownGoodImages = genVerses.map(v => v.filename);
+  } catch(e) {
+    console.warn('대체이미지 풀 미리채우기 실패(창세기 데이터 로드 안 됨):', e);
+  }
+})();
+
+// 가족(부모) 매핑 로드 - 없는 이미지는 랜덤이 아니라 "내용상 제일 비슷한 절의 이미지"로 대체하기 위함
+(async function loadFamilyParentMap(){
+  try {
+    const res = await fetch('family_parent_map.json');
+    familyParentMap = await res.json();
+  } catch(e) {
+    console.warn('가족(부모)이미지 매핑 로드 실패 - 랜덤 대체로만 동작함:', e);
+  }
+})();
+
+// webp가 애초에 하나도 없는 환경이면, 이미지마다 webp시도+png시도로 요청이 2배가 되는 걸 막기 위해
+// 처음 몇 번 webp가 다 실패하면 이후엔 아예 webp 시도를 건너뜀
+let webpFailCount = 0;
+function noteWebpResult(success){
+  if (webpCheckDone) return;
+  if (success) { webpSupported = true; webpCheckDone = true; return; }
+  webpFailCount++;
+  if (webpFailCount >= 3) { webpSupported = false; webpCheckDone = true; }
+}
+
+function loadWithWebpFallback(imgEl, filename, variant, onFinalError){
+  const startStage = webpSupported ? 0 : 1; // webp가 이미 안 되는 걸로 판명났으면 바로 png부터 시도
+  imgEl.dataset.fallbackStage = String(startStage);
+  imgEl.onload = () => {
+    if (imgEl.dataset.fallbackStage === '0') {
+      noteWebpResult(true); // webp 자체가 성공 -> webp 지원 확인됨
+    } else if (imgEl.dataset.fallbackStage === '1' && startStage === 0) {
+      // webp는 실패했는데 png는 성공 = 이 이미지는 존재하는데 webp만 없다는 확실한 신호
+      noteWebpResult(false);
+    }
+    // startStage가 원래부터 1(webp 아예 시도 안 함)이었던 경우는 webp 판단 자체를 안 함(정보 없음)
+    if (!knownGoodImages.includes(filename)) knownGoodImages.push(filename);
+  };
+  imgEl.onerror = () => {
+    const stage = Number(imgEl.dataset.fallbackStage);
+    if (stage === 0) {
+      imgEl.dataset.fallbackStage = '1';
+      imgEl.src = IMAGES_BASE_PATH + filename; // 원본 PNG로 폴백
+    } else if (onFinalError) {
+      // 여기 온 건 webp도 png도 다 없다는 뜻 = "이미지 자체가 아직 없음"이지 webp 문제가 아님 -> webp 판단에 영향 안 줌
+      onFinalError();
+    }
+  };
+  imgEl.src = startStage === 0 ? IMAGES_BASE_PATH + webpName(filename, variant) : IMAGES_BASE_PATH + filename;
+}
+// 그리드뷰(gv-thumb)처럼 inline onerror에서 부르는 전역용 폴백
+function gvThumbFallback(imgEl, filename){
+  const stage = Number(imgEl.dataset.fallbackStage || '0');
+  if (stage === 0) {
+    imgEl.dataset.fallbackStage = '1';
+    imgEl.src = IMAGES_BASE_PATH + filename;
+  } else {
+    imgEl.style.background = '#DCD4BE';
+    imgEl.removeAttribute('src');
+  }
+}
+
+let bookIndex = [];
+let bookCache = {};       // code -> verses[]
+let currentBook = null;
+let currentVerses = []; // 지금 우측에 표시중인 구절 배열 (책읽기든 묵상이든 공통 - scrollToVerse가 이걸로 동작)
+let autoScrollTimer = null;
+let autoScrollPausedUntil = 0;
+const READ_DELAY_KEY = 'bible_gallery_read_delay_v1';
+let readDelaySeconds = Number(localStorage.getItem(READ_DELAY_KEY)) || 3;
+let romanizeOn = false;
+let ttsOn = false;
+
+// 대표 30개 언어 (구글번역 코드 / 음성합성 BCP-47 코드 / 한국어 표시명)
+// ko/en/ja/zh 는 원본 데이터에 이미 있어서(v.kr/v.en/v.jp/v.cn) 번역 안 태우고 바로 씀
+const LANGUAGES = [
+  { code:'ko', name:'한국어',      voice:'ko-KR' },
+  { code:'en', name:'English',     voice:'en-US' },
+  { code:'ja', name:'日本語',      voice:'ja-JP' },
+  { code:'zh', name:'中文',        voice:'zh-CN' },
+  { code:'es', name:'Español',     voice:'es-ES' },
+  { code:'fr', name:'Français',    voice:'fr-FR' },
+  { code:'de', name:'Deutsch',     voice:'de-DE' },
+  { code:'it', name:'Italiano',    voice:'it-IT' },
+  { code:'pt', name:'Português',   voice:'pt-PT' },
+  { code:'ru', name:'Русский',     voice:'ru-RU' },
+  { code:'ar', name:'العربية',     voice:'ar-SA' },
+  { code:'hi', name:'हिन्दी',      voice:'hi-IN' },
+  { code:'vi', name:'Tiếng Việt',  voice:'vi-VN' },
+  { code:'th', name:'ไทย',         voice:'th-TH' },
+  { code:'id', name:'Indonesia',   voice:'id-ID' },
+  { code:'ms', name:'Melayu',      voice:'ms-MY' },
+  { code:'tr', name:'Türkçe',      voice:'tr-TR' },
+  { code:'nl', name:'Nederlands',  voice:'nl-NL' },
+  { code:'pl', name:'Polski',      voice:'pl-PL' },
+  { code:'sv', name:'Svenska',     voice:'sv-SE' },
+  { code:'da', name:'Dansk',       voice:'da-DK' },
+  { code:'no', name:'Norsk',       voice:'nb-NO' },
+  { code:'fi', name:'Suomi',       voice:'fi-FI' },
+  { code:'el', name:'Ελληνικά',    voice:'el-GR' },
+  { code:'he', name:'עברית',       voice:'he-IL' },
+  { code:'cs', name:'Čeština',     voice:'cs-CZ' },
+  { code:'hu', name:'Magyar',      voice:'hu-HU' },
+  { code:'ro', name:'Română',      voice:'ro-RO' },
+  { code:'uk', name:'Українська',  voice:'uk-UA' },
+  { code:'tl', name:'Filipino',    voice:'fil-PH' },
+];
+const NATIVE_DATA_LANGS = new Set(['ko','en','ja','zh']); // 원본 데이터에 텍스트가 이미 있는 언어
+const ROMANIZE_LANGS = new Set(['ko','ja','zh']);          // 로마자/병음 데이터가 있는 언어
+
+let selectedLangs = ['ko', 'en'];
+let otherLangs = [];  // 사용자가 직접 추가한 언어코드들
+
+/* ---------- 번역 캐시 (기존 tts-module.js 패턴과 동일한 방식) ---------- */
+let tCache = {};
+try { tCache = JSON.parse(localStorage.getItem(TRANSLATE_CACHE_KEY) || '{}'); } catch(e){ tCache = {}; }
+function saveTCache(){
+  try { localStorage.setItem(TRANSLATE_CACHE_KEY, JSON.stringify(tCache)); } catch(e){ /* 저장공간 부족시 조용히 무시 */ }
+}
+function tCacheKey(ref, lang){ return ref + '::' + lang; }
+
+async function translateText(text, targetLangCode, sourceLangCode){
+  const sl = sourceLangCode || 'ko'; // 실제 원문 데이터가 한국어(kr)뿐이라 기본 소스언어는 한국어
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      const translated = data[0].map(seg => seg[0]).join('');
+      if (translated) return translated;
+    }
+  } catch(e) { /* fall through */ }
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sl}|${targetLangCode}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.responseData && data.responseData.translatedText) return data.responseData.translatedText;
+    }
+  } catch(e) { /* give up */ }
+  return null;
+}
+
+// 절(v)의 lang 순수 본문만 반환 (TTS용 — 로마자 안 섞임). 데이터에 없으면 한국어(kr) 원문 기준 번역 후 캐싱.
+async function getVerseText(v, lang) {
+  if (lang === 'ko' && v.kr) return v.kr;
+  if (lang === 'en' && v.en) return v.en;
+  if (lang === 'ja' && v.jp) return v.jp;
+  if (lang === 'zh' && v.cn) return v.cn;
+
+  const key = tCacheKey(v.ref, lang);
+  if (tCache[key]) return tCache[key];
+
+  // 원본 데이터엔 kr(한국어)만 있음 - en이 따로 있으면 그걸 우선 소스로(더 정확할 수 있어서), 없으면 kr에서 번역
+  const base = v.en || v.kr || '';
+  const baseLang = v.en ? 'en' : 'ko';
+  if (!base) return null;
+  const translated = await translateText(base, lang, baseLang);
+  if (translated) {
+    tCache[key] = translated;
+    saveTCache();
+  }
+  return translated;
+}
+
+function getRomanization(v, lang){
+  if (lang === 'ja') return v.jp_r || null;
+  if (lang === 'zh') return v.cn_p || null;
+  if (lang === 'ko') return (v.kr && window.romanizeSentence) ? romanizeSentence(v.kr) : null;
+  return null;
+}
+
+// 화면표시용: 로마자 설정 켜져있으면 "원문 + 병음"을 같이 반환 (TTS는 이거 안 씀, 원문만 읽음)
+async function getVerseDisplayText(v, lang){
+  const base = await getVerseText(v, lang);
+  if (!base) return base;
+  if (romanizeOn && ROMANIZE_LANGS.has(lang)) {
+    const roman = getRomanization(v, lang);
+    if (roman) return base + '\n' + roman;
+  }
+  return base;
+}
+
+function langLabel(code){
+  const found = LANGUAGES.find(l => l.code === code);
+  return found ? code.toUpperCase() : code.toUpperCase();
+}
+function langVoice(code){
+  const found = LANGUAGES.find(l => l.code === code);
+  return found ? found.voice : code;
+}
+
+/* ---------- 설정 로드/저장 ---------- */
+try {
+  const saved = JSON.parse(localStorage.getItem(LANG_PREF_KEY) || 'null');
+  if (saved && saved.length) selectedLangs = saved;
+} catch(e) {}
+try {
+  otherLangs = JSON.parse(localStorage.getItem(OTHER_LANG_KEY) || '[]');
+} catch(e) { otherLangs = []; }
+romanizeOn = localStorage.getItem(ROMANIZE_KEY) === '1';
+ttsOn = localStorage.getItem(TTS_KEY) === '1';
+
+function buildLangGrid(){
+  const grid = document.getElementById('lang-chk-grid');
+  grid.innerHTML = '';
+  LANGUAGES.forEach(l => {
+    const row = document.createElement('label');
+    row.className = 'lang-chk-row';
+    row.innerHTML = `<input type="checkbox" value="${l.code}" ${selectedLangs.includes(l.code)?'checked':''}> ${l.name}`;
+    row.querySelector('input').addEventListener('change', onLangSelectionChange);
+    grid.appendChild(row);
+  });
+  renderOtherLangChips();
+}
+
+function onLangSelectionChange(){
+  const checked = Array.from(document.querySelectorAll('#lang-chk-grid input:checked')).map(c => c.value);
+  selectedLangs = [...checked, ...otherLangs];
+  localStorage.setItem(LANG_PREF_KEY, JSON.stringify(checked));
+  rebuildPrimaryLangSelect();
+  if (currentBook) renderFeed(currentBook);
+}
+
+const PRIMARY_LANG_KEY = 'bible_gallery_primary_lang_v1';
+let primaryLang = localStorage.getItem(PRIMARY_LANG_KEY) || null;
+
+function rebuildPrimaryLangSelect(){
+  const sel = document.getElementById('primary-lang-select');
+  const prev = primaryLang;
+  sel.innerHTML = '';
+  selectedLangs.forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    const found = LANGUAGES.find(l => l.code === code);
+    opt.textContent = found ? found.name : code.toUpperCase();
+    sel.appendChild(opt);
+  });
+  if (prev && selectedLangs.includes(prev)) {
+    primaryLang = prev;
+  } else {
+    primaryLang = selectedLangs[0] || null;
+  }
+  if (primaryLang) sel.value = primaryLang;
+}
+
+document.getElementById('primary-lang-select').addEventListener('change', (e) => {
+  primaryLang = e.target.value;
+  localStorage.setItem(PRIMARY_LANG_KEY, primaryLang);
+  refreshBookTitles(); // 대표언어 바뀌면 책이름(목차/헤더/진행률 등)도 그 언어로 갱신
+  if (currentBook && bookCache[currentBook]) {
+    const v = bookCache[currentBook][activeIndex];
+    if (v) updateHero(v);
+  }
+});
+
+function refreshBookTitles(){
+  buildTOC(); // 목차의 책이름을 새 언어로 다시 그림 (열려있던 책은 자동으로 닫힘)
+  if (currentBook) {
+    const bookMeta = bookIndex.find(b => b.code === currentBook);
+    if (bookMeta) document.getElementById('current-book-title').textContent = getBookTitle(currentBook);
+  }
+  if (document.getElementById('panel-progress').classList.contains('active')) renderBookProgressList();
+}
+
+function renderOtherLangChips(){
+  let listEl = document.getElementById('other-lang-list');
+  if (!listEl) {
+    listEl = document.createElement('div');
+    listEl.id = 'other-lang-list';
+    document.getElementById('other-lang-code').closest('.other-lang-row').after(listEl);
+  }
+  listEl.innerHTML = '';
+  otherLangs.forEach(code => {
+    const chip = document.createElement('div');
+    chip.className = 'other-lang-chip';
+    chip.innerHTML = `<span>${code.toUpperCase()}</span><button title="제거">✕</button>`;
+    chip.querySelector('button').addEventListener('click', () => {
+      otherLangs = otherLangs.filter(c => c !== code);
+      localStorage.setItem(OTHER_LANG_KEY, JSON.stringify(otherLangs));
+      onLangSelectionChange();
+      renderOtherLangChips();
+    });
+    listEl.appendChild(chip);
+  });
+}
+
+document.getElementById('btn-add-other-lang').addEventListener('click', () => {
+  const input = document.getElementById('other-lang-code');
+  const code = input.value.trim().toLowerCase();
+  if (!code || code.length > 6) return;
+  if (!otherLangs.includes(code)) {
+    otherLangs.push(code);
+    localStorage.setItem(OTHER_LANG_KEY, JSON.stringify(otherLangs));
+    onLangSelectionChange();
+    renderOtherLangChips();
+  }
+  input.value = '';
+});
+
+document.getElementById('chk-romanize').checked = romanizeOn;
+document.getElementById('chk-romanize').addEventListener('change', (e) => {
+  romanizeOn = e.target.checked;
+  localStorage.setItem(ROMANIZE_KEY, romanizeOn ? '1' : '0');
+  if (currentBook) renderFeed(currentBook);
+});
+
+document.getElementById('chk-tts').checked = ttsOn;
+document.getElementById('chk-tts').addEventListener('change', (e) => {
+  ttsOn = e.target.checked;
+  localStorage.setItem(TTS_KEY, ttsOn ? '1' : '0');
+  if (!ttsOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+});
+
+/* ---------- 이미지 위 오버레이 자막 폰트크기 ---------- */
+const CAPTION_SIZE_KEY = 'bible_gallery_caption_size_v1';
+let captionSize = Number(localStorage.getItem(CAPTION_SIZE_KEY)) || 15;
+function applyCaptionSize(){
+  document.documentElement.style.setProperty('--caption-size', captionSize + 'px');
+  document.getElementById('caption-size-label').textContent = captionSize + 'px';
+}
+applyCaptionSize();
+document.getElementById('btn-caption-bigger').addEventListener('click', () => {
+  captionSize = Math.min(captionSize + 2, 40);
+  localStorage.setItem(CAPTION_SIZE_KEY, captionSize);
+  applyCaptionSize();
+});
+document.getElementById('btn-caption-smaller').addEventListener('click', () => {
+  captionSize = Math.max(captionSize - 2, 10);
+  localStorage.setItem(CAPTION_SIZE_KEY, captionSize);
+  applyCaptionSize();
+});
+
+buildLangGrid();
+selectedLangs = [...Array.from(document.querySelectorAll('#lang-chk-grid input:checked')).map(c=>c.value), ...otherLangs];
+rebuildPrimaryLangSelect();
+
+/* ---------- 초기 로드: index.json (가벼움) ---------- */
+fetch(DATA_BASE_PATH + 'index.json')
+  .then(r => r.json())
+  .then(async idx => {
+    bookIndex = idx;
+    document.getElementById('sb-total').textContent =
+      `${idx.length}권 · ${idx.reduce((s,b)=>s+b.count,0).toLocaleString()}절`;
+    buildTOC();
+    await restoreLastPosition(); // 마지막으로 보던 위치가 있으면 처음부터 말고 거기서 이어서 열기
+  });
+
+
+const BOOK_NAMES = {
+  "Gen": {ko:"창세기",en:"Genesis",zh:"创世记",ja:"創世記"},
+  "Exo": {ko:"출애굽기",en:"Exodus",zh:"出埃及记",ja:"出エジプト記"},
+  "Lev": {ko:"레위기",en:"Leviticus",zh:"利未记",ja:"レビ記"},
+  "Num": {ko:"민수기",en:"Numbers",zh:"民数记",ja:"民数記"},
+  "Deu": {ko:"신명기",en:"Deuteronomy",zh:"申命记",ja:"申命記"},
+  "Jos": {ko:"여호수아",en:"Joshua",zh:"约书亚记",ja:"ヨシュア記"},
+  "Jdg": {ko:"사사기",en:"Judges",zh:"士师记",ja:"士師記"},
+  "Rut": {ko:"룻기",en:"Ruth",zh:"路得记",ja:"ルツ記"},
+  "1Sa": {ko:"사무엘상",en:"1 Samuel",zh:"撒母耳记上",ja:"サムエル記上"},
+  "2Sa": {ko:"사무엘하",en:"2 Samuel",zh:"撒母耳记下",ja:"サムエル記下"},
+  "1Ki": {ko:"열왕기상",en:"1 Kings",zh:"列王纪上",ja:"列王記上"},
+  "2Ki": {ko:"열왕기하",en:"2 Kings",zh:"列王纪下",ja:"列王記下"},
+  "1Ch": {ko:"역대상",en:"1 Chronicles",zh:"历代志上",ja:"歴代誌上"},
+  "2Ch": {ko:"역대하",en:"2 Chronicles",zh:"历代志下",ja:"歴代誌下"},
+  "Ezr": {ko:"에스라",en:"Ezra",zh:"以斯拉记",ja:"エズラ記"},
+  "Neh": {ko:"느헤미야",en:"Nehemiah",zh:"尼希米记",ja:"ネヘミヤ記"},
+  "Est": {ko:"에스더",en:"Esther",zh:"以斯帖记",ja:"エステル記"},
+  "Job": {ko:"욥기",en:"Job",zh:"约伯记",ja:"ヨブ記"},
+  "Psa": {ko:"시편",en:"Psalms",zh:"诗篇",ja:"詩篇"},
+  "Pro": {ko:"잠언",en:"Proverbs",zh:"箴言",ja:"箴言"},
+  "Ecc": {ko:"전도서",en:"Ecclesiastes",zh:"传道书",ja:"伝道の書"},
+  "Sol": {ko:"아가",en:"Song of Solomon",zh:"雅歌",ja:"雅歌"},
+  "Isa": {ko:"이사야",en:"Isaiah",zh:"以赛亚书",ja:"イザヤ書"},
+  "Jer": {ko:"예레미야",en:"Jeremiah",zh:"耶利米书",ja:"エレミヤ書"},
+  "Lam": {ko:"예레미야애가",en:"Lamentations",zh:"耶利米哀歌",ja:"エレミヤ哀歌"},
+  "Eze": {ko:"에스겔",en:"Ezekiel",zh:"以西结书",ja:"エゼキエル書"},
+  "Dan": {ko:"다니엘",en:"Daniel",zh:"但以理书",ja:"ダニエル書"},
+  "Hos": {ko:"호세아",en:"Hosea",zh:"何西阿书",ja:"ホセア書"},
+  "Joe": {ko:"요엘",en:"Joel",zh:"约珥书",ja:"ヨエル書"},
+  "Amo": {ko:"아모스",en:"Amos",zh:"阿摩司书",ja:"アモス書"},
+  "Oba": {ko:"오바댜",en:"Obadiah",zh:"俄巴底亚书",ja:"オバデヤ書"},
+  "Jon": {ko:"요나",en:"Jonah",zh:"约拿书",ja:"ヨナ書"},
+  "Mic": {ko:"미가",en:"Micah",zh:"弥迦书",ja:"ミカ書"},
+  "Nah": {ko:"나훔",en:"Nahum",zh:"那鸿书",ja:"ナホム書"},
+  "Hab": {ko:"하박국",en:"Habakkuk",zh:"哈巴谷书",ja:"ハバクク書"},
+  "Zep": {ko:"스바냐",en:"Zephaniah",zh:"西番雅书",ja:"ゼパニヤ書"},
+  "Hag": {ko:"학개",en:"Haggai",zh:"哈该书",ja:"ハガイ書"},
+  "Zec": {ko:"스가랴",en:"Zechariah",zh:"撒迦利亚书",ja:"ゼカリヤ書"},
+  "Mal": {ko:"말라기",en:"Malachi",zh:"玛拉基书",ja:"マラキ書"},
+  "Mat": {ko:"마태복음",en:"Matthew",zh:"马太福音",ja:"マタイの福音書"},
+  "Mar": {ko:"마가복음",en:"Mark",zh:"马可福音",ja:"マルコの福音書"},
+  "Luk": {ko:"누가복음",en:"Luke",zh:"路加福音",ja:"ルカの福音書"},
+  "Joh": {ko:"요한복음",en:"John",zh:"约翰福音",ja:"ヨハネの福音書"},
+  "Act": {ko:"사도행전",en:"Acts",zh:"使徒行传",ja:"使徒の働き"},
+  "Rom": {ko:"로마서",en:"Romans",zh:"罗马书",ja:"ローマ人への手紙"},
+  "1Co": {ko:"고린도전서",en:"1 Corinthians",zh:"哥林多前书",ja:"コリント人への手紙第一"},
+  "2Co": {ko:"고린도후서",en:"2 Corinthians",zh:"哥林多后书",ja:"コリント人への手紙第二"},
+  "Gal": {ko:"갈라디아서",en:"Galatians",zh:"加拉太书",ja:"ガラテヤ人への手紙"},
+  "Eph": {ko:"에베소서",en:"Ephesians",zh:"以弗所书",ja:"エペソ人への手紙"},
+  "Phi": {ko:"빌립보서",en:"Philippians",zh:"腓立比书",ja:"ピリピ人への手紙"},
+  "Col": {ko:"골로새서",en:"Colossians",zh:"歌罗西书",ja:"コロサイ人への手紙"},
+  "1Th": {ko:"데살로니가전서",en:"1 Thessalonians",zh:"帖撒罗尼迦前书",ja:"テサロニケ人への手紙第一"},
+  "2Th": {ko:"데살로니가후서",en:"2 Thessalonians",zh:"帖撒罗尼迦后书",ja:"テサロニケ人への手紙第二"},
+  "1Ti": {ko:"디모데전서",en:"1 Timothy",zh:"提摩太前书",ja:"テモテへの手紙第一"},
+  "2Ti": {ko:"디모데후서",en:"2 Timothy",zh:"提摩太后书",ja:"テモテへの手紙第二"},
+  "Tit": {ko:"디도서",en:"Titus",zh:"提多书",ja:"テトスへの手紙"},
+  "Phm": {ko:"빌레몬서",en:"Philemon",zh:"腓利门书",ja:"ピレモンへの手紙"},
+  "Heb": {ko:"히브리서",en:"Hebrews",zh:"希伯来书",ja:"ヘブル人への手紙"},
+  "Jam": {ko:"야고보서",en:"James",zh:"雅各书",ja:"ヤコブの手紙"},
+  "1Pe": {ko:"베드로전서",en:"1 Peter",zh:"彼得前书",ja:"ペテロの手紙第一"},
+  "2Pe": {ko:"베드로후서",en:"2 Peter",zh:"彼得后书",ja:"ペテロの手紙第二"},
+  "1Jo": {ko:"요한일서",en:"1 John",zh:"约翰一书",ja:"ヨハネの手紙第一"},
+  "2Jo": {ko:"요한이서",en:"2 John",zh:"约翰二书",ja:"ヨハネの手紙第二"},
+  "3Jo": {ko:"요한삼서",en:"3 John",zh:"约翰三书",ja:"ヨハネの手紙第三"},
+  "Jud": {ko:"유다서",en:"Jude",zh:"犹大书",ja:"ユダの手紙"},
+  "Rev": {ko:"요한계시록",en:"Revelation",zh:"启示录",ja:"ヨハネの黙示録"}
+};
+
+// 현재 화면에 쓸 책이름 언어 결정: 대표언어(오버레이 언어) 우선, 없으면 체크된 언어 중 첫번째
+// 한중일영 외 언어는 데이터가 없으니 영어로 대체
+function getBookDisplayLang(){
+  const lang = primaryLang || selectedLangs[0] || 'ko';
+  return ['ko','en','zh','ja'].includes(lang) ? lang : 'en';
+}
+function getBookTitle(code){
+  const entry = BOOK_NAMES[code];
+  if (!entry) return code;
+  const lang = getBookDisplayLang();
+  return entry[lang] || entry.en || entry.ko;
+}
+// v.ref(예: "Gen.창세기 1.1")는 한글 책이름이 항상 박혀있어서, 화면표시용으로는 이 함수로 새로 조립
+function formatVerseRef(v){
+  const code = v.ref.split('.')[0];
+  return `${getBookTitle(code)} ${v.ch}:${v.vs}`;
+}
+// TOC 좌측 사이드바의 구절 미리보기 - 오버레이 언어에 맞는 원문 필드 사용(번역API 호출 없이 이미 있는 4개 언어 데이터로)
+function getTocPreviewText(v){
+  const lang = getBookDisplayLang(); // 'ko'|'en'|'zh'|'ja'
+  const fieldMap = { ko:'kr', en:'en', zh:'cn', ja:'jp' };
+  const text = v[fieldMap[lang]] || v.kr || '';
+  return text.slice(0, 30);
+}
+
+function buildTOC(){
+  const list = document.getElementById('toc-list');
+  list.innerHTML = '';
+  bookIndex.forEach(book => {
+    const themeEl = document.createElement('div');
+    themeEl.className = 'toc-theme';
+    themeEl.dataset.code = book.code; // 책이름 텍스트가 언어따라 바뀌어도 안정적으로 찾을 수 있게
+    const head = document.createElement('div');
+    head.className = 'toc-theme-head';
+    head.innerHTML = `<span class="n">${String(book.order).padStart(2,'0')}</span><span class="t">${getBookTitle(book.code)}</span><span class="c">${book.count}절</span><span class="arrow">▶</span>`;
+    head.addEventListener('click', async () => {
+      const wasOpen = themeEl.classList.contains('open');
+      themeEl.classList.toggle('open');
+      if (!wasOpen) await ensureBookLoaded(book.code, themeEl);
+    });
+    themeEl.appendChild(head);
+    const scenesWrap = document.createElement('div');
+    scenesWrap.className = 'toc-scenes';
+    themeEl.appendChild(scenesWrap);
+    list.appendChild(themeEl);
+  });
+}
+
+async function ensureBookLoaded(code, themeEl){
+  if (!bookCache[code]) {
+    const res = await fetch(DATA_BASE_PATH + code + '.json');
+    bookCache[code] = await res.json();
+  }
+  if (themeEl && !themeEl.dataset.rendered) {
+    const wrap = themeEl.querySelector('.toc-scenes');
+    const frag = document.createDocumentFragment();
+    bookCache[code].forEach((v, i) => {
+      const sEl = document.createElement('div');
+      sEl.className = 'toc-scene';
+      sEl.textContent = `${v.ch}:${v.vs}  ${getTocPreviewText(v)}`;
+      sEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.toc-scene.current').forEach(el => el.classList.remove('current'));
+        sEl.classList.add('current');
+        returnTarget = null; // 목차로 직접 이동하면 "목록으로" 되돌아갈 곳 없음
+        currentDevotionalDay = null; // 묵상모드 컨텍스트도 해제
+        closeGridView(); // 묵상 간단히보기 등 전체화면 오버레이가 열려있었다면 정리
+        document.getElementById('back-to-source').classList.remove('show');
+        openBookFeed(code, i);
+        closeMobileSidebar();
+      });
+      frag.appendChild(sEl);
+    });
+    wrap.appendChild(frag);
+    themeEl.dataset.rendered = '1';
+  }
+  return bookCache[code];
+}
+
+async function openBookFeed(code, jumpToIndex){
+  const bookMeta = bookIndex.find(b => b.code === code);
+  currentDevotionalDay = null; // 정상 책읽기 모드 진입 - 묵상 컨텍스트 해제
+  await ensureBookLoaded(code, null);
+  currentBook = code;
+  document.getElementById('current-book-title').textContent = getBookTitle(code);
+  await renderFeed(code);
+  renderThumbGrid(code);
+  const idx = jumpToIndex != null ? jumpToIndex : 0;
+  scrollToVerse(idx);
+}
+
+const THUMB_BATCH = 30; // 100개씩 한번에 만들면 첫 로딩때 메인스레드가 막혀서 버튼도 안눌림 - 30개로 축소
+
+function renderThumbGrid(code){
+  const verses = bookCache[code];
+  const grid = document.getElementById('thumb-grid');
+  grid.innerHTML = '';
+  grid.dataset.rendered = '0';
+
+  function renderThumbBatch(){
+    const rendered = Number(grid.dataset.rendered);
+    if (rendered >= verses.length) return;
+    const end = Math.min(rendered + THUMB_BATCH, verses.length);
+    const MINI_CHUNK = 10; // 배치 안에서도 이만큼씩 쪼개서, 매 프레임 사이 브라우저가 숨쉴 틈을 줌
+
+    function renderMiniChunk(start){
+      const chunkEnd = Math.min(start + MINI_CHUNK, end);
+      const frag = document.createDocumentFragment();
+      for (let i = start; i < chunkEnd; i++) {
+        const v = verses[i];
+        const t = document.createElement('div');
+        t.className = 'thumb';
+        t.dataset.idx = i;
+        t.title = v.ref;
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        loadWithWebpFallback(img, v.filename, 'thumb', () => { t.style.background = '#DCD4BE'; img.remove(); });
+        t.appendChild(img);
+        t.addEventListener('click', () => scrollToVerse(i));
+        frag.appendChild(t);
+      }
+      grid.appendChild(frag);
+      if (chunkEnd < end) {
+        requestAnimationFrame(() => renderMiniChunk(chunkEnd)); // 다음 조각은 다음 프레임에 - 메인스레드 안 막음
+      } else {
+        finishBatch();
+      }
+    }
+
+    function finishBatch(){
+      grid.dataset.rendered = String(end);
+      pruneOldThumbs(grid); // 너무 오래 쌓인(이미 한참 스크롤 지나간) 썸네일은 정리 - DOM 노드 무한증식 방지
+      // 다음 배치를 위한 감시용 sentinel (그리드 스크롤이 여기 닿으면 다음 배치 추가)
+      const old = document.getElementById('thumb-sentinel');
+      if (old) old.remove();
+      if (end < verses.length) {
+        const sentinel = document.createElement('div');
+        sentinel.id = 'thumb-sentinel';
+        sentinel.style.gridColumn = '1 / -1';
+        grid.appendChild(sentinel);
+        thumbSentinelObserver.observe(sentinel);
+      }
+    }
+
+    renderMiniChunk(rendered);
+  }
+  grid._renderNextBatch = renderThumbBatch;
+  renderThumbBatch();
+}
+
+// 시편처럼 긴 책을 끝까지 스크롤하면 썸네일 DOM이 수천 개까지 쌓여서 스크롤이 느려짐 →
+// 화면에서 이미 한참 지나간(위로 스크롤아웃된) 오래된 썸네일은 주기적으로 잘라냄.
+// 그냥 지우면 콘텐츠 높이가 줄어서 화면이 위로 확 튀니까, 지운 만큼 scrollTop도 같이 보정함.
+const THUMB_KEEP_MAX = 240; // 이 개수 넘으면 정리 시작 (배치 30개 x 8배치 정도)
+const THUMB_PRUNE_TO = 150; // 정리 후 남길 개수
+function pruneOldThumbs(grid){
+  const thumbs = grid.querySelectorAll('.thumb');
+  if (thumbs.length <= THUMB_KEEP_MAX) return;
+  const removeCount = thumbs.length - THUMB_PRUNE_TO;
+  const scrollBox = document.getElementById('center-panel');
+  const beforeScrollTop = scrollBox.scrollTop;
+  const firstKeptEl = thumbs[removeCount];
+  const firstKeptTopBefore = firstKeptEl.getBoundingClientRect().top;
+  for (let i = 0; i < removeCount; i++) thumbs[i].remove();
+  // 제거 후 같은 요소의 화면상 위치가 안 바뀌도록 scrollTop 보정 (점프 방지)
+  const firstKeptTopAfter = firstKeptEl.getBoundingClientRect().top;
+  scrollBox.scrollTop = beforeScrollTop - (firstKeptTopBefore - firstKeptTopAfter);
+}
+
+const thumbSentinelObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const grid = document.getElementById('thumb-grid');
+      thumbSentinelObserver.unobserve(entry.target);
+      if (grid._renderNextBatch) grid._renderNextBatch();
+    }
+  });
+}, { root: null, rootMargin: '300px' });
+
+function scrollToVerse(idx){
+  const row = document.querySelector(`.feed-row[data-idx="${idx}"]`);
+  if (row) row.scrollIntoView({ block: 'start' });
+  if (currentVerses && currentVerses.length) {
+    setActiveVerse(idx, currentVerses);
+  } else {
+    console.warn('[scrollToVerse] currentVerses가 비어있어서 setActiveVerse 호출 안 됨!');
+  }
+}
+
+let translateFrontier = -1; // 현재 열린 책에서 번역 요청을 이미 넣은 가장 마지막 인덱스
+const TRANSLATE_LOOKAHEAD = 5; // 활성구절 기준 앞으로 몇 개까지 미리 번역해둘지
+const TRANSLATE_STEP = 2; // 한 걸음 나아갈 때마다 최소 몇 개씩 추가로 번역할지
+let translateDebounceTimer = null;
+
+async function renderFeed(code){
+  const verses = bookCache[code];
+  currentVerses = verses; // scrollToVerse 등에서 공통으로 씀
+  translateFrontier = -1; // 새 책 열 때마다 리셋
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  verses.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'feed-row';
+    row.dataset.idx = i;
+    row.innerHTML = `<div class="row-ref">${getBookTitle(v.ref.split('.')[0])}  ${v.ch}:${v.vs}</div>`;
+    selectedLangs.forEach(lang => {
+      const line = document.createElement('div');
+      line.className = 'lang-line';
+      line.dataset.lang = lang;
+      line.innerHTML = `<span class="tag">${langLabel(lang)}</span><span class="txt pending">…</span>`;
+      row.appendChild(line);
+      getVerseDisplayText(v, lang).then(text => {
+        const el = line.querySelector('.txt');
+        if (text) { el.textContent = text; el.classList.remove('pending'); }
+        else { el.textContent = '(번역 불가)'; }
+      });
+    });
+    row.addEventListener('click', () => scrollToVerse(i));
+    frag.appendChild(row);
+  });
+
+  feed.appendChild(frag);
+  document.getElementById('feed-progress').textContent = `${verses.length}절`;
+  setupScrollSync(verses);
+  // translateRowsUpTo(TRANSLATE_LOOKAHEAD, verses); // 윈도우번역 일단 꺼둠(원인 격리용) - 위에서 각 행마다 바로 호출하는 방식으로 되돌림
+}
+
+// idx 0부터 targetIdx까지 중 아직 번역 요청 안 넣은 구절들만 번역 (frontier 이후분만) - "처음 5개, 이후 +1씩"의 핵심
+function translateRowsUpTo(targetIdx, verses){
+  const end = Math.min(targetIdx, verses.length - 1);
+  for (let i = translateFrontier + 1; i <= end; i++) {
+    const row = document.querySelector(`.feed-row[data-idx="${i}"]`);
+    if (!row) continue;
+    const v = verses[i];
+    selectedLangs.forEach(lang => {
+      const line = row.querySelector(`.lang-line[data-lang="${lang}"]`);
+      if (!line) return;
+      getVerseDisplayText(v, lang).then(text => {
+        const el = line.querySelector('.txt');
+        if (!el) return; // 그 사이 다른 책으로 넘어가서 행이 사라졌을 수 있음
+        if (text) { el.textContent = text; el.classList.remove('pending'); }
+        else { el.textContent = '(번역 불가)'; }
+      });
+    });
+  }
+  translateFrontier = Math.max(translateFrontier, end);
+}
+
+/* ---------- 스크롤 동기화: 우측 피드에서 "지금 보고 있는" 절을 감지해서
+   가운데 히어로 이미지 + 썸네일 활성상태를 자동으로 갱신 (영상플레이어처럼) ---------- */
+let activeIndex = -1;
+let rowObserver = null;
+
+let scrollSyncDebounce = null;
+function setupScrollSync(verses){
+  if (rowObserver) rowObserver.disconnect();
+  if (scrollSyncDebounce) clearTimeout(scrollSyncDebounce);
+  activeIndex = -1;
+  rowObserver = new IntersectionObserver((entries) => {
+    if (ttsOn && isSpeakingSequence) {
+      return; // TTS 재생 중엔 스크롤 때문에 절이 넘어가도 무시 - 끝까지 다 읽게 함 (끝나면 resyncActiveFromScroll이 따라잡음)
+    }
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Number(entry.target.dataset.idx);
+        // 번역 비동기로딩 때문에 레이아웃이 계속 흔들리면서 스크롤 안 했는데도 계속 신호가 오는 것 방지 -
+        // 짧은 시간(120ms) 안에 여러 번 오면 제일 마지막 것만 반영
+        if (scrollSyncDebounce) clearTimeout(scrollSyncDebounce);
+        scrollSyncDebounce = setTimeout(() => setActiveVerse(idx, verses), 120);
+      }
+    });
+  }, { root: document.getElementById('right-panel'), rootMargin: '0px 0px -65% 0px', threshold: 0 });
+  document.querySelectorAll('.feed-row').forEach(row => rowObserver.observe(row));
+}
+
+// TTS 재생 중 사용자가 계속 스크롤했을 수 있으므로, 다 읽고 나면 지금 실제 스크롤 위치에 맞춰 재동기화
+function resyncActiveFromScroll(){
+  const panel = document.getElementById('right-panel');
+  const panelRect = panel.getBoundingClientRect();
+  const triggerY = panelRect.top + panelRect.height * 0.35; // IntersectionObserver의 rootMargin -65%와 대략 맞춤
+  let closest = null;
+  document.querySelectorAll('.feed-row').forEach(row => {
+    const r = row.getBoundingClientRect();
+    if (r.top <= triggerY && r.bottom >= panelRect.top) closest = row;
+  });
+  if (closest && currentBook) {
+    const idx = Number(closest.dataset.idx);
+    if (idx !== activeIndex) setActiveVerse(idx, bookCache[currentBook]);
+  }
+}
+
+function setActiveVerse(idx, verses){
+  if (idx === activeIndex) return;
+  activeIndex = idx;
+  const v = verses[idx];
+  if (!v) { console.error('[setActiveVerse] verses[idx]가 undefined! verses.length=', verses.length, 'idx=', idx); return; }
+  if (currentBook) saveLastPosition(currentBook, idx); // 다시 열었을 때 이어보기용
+  // 윈도우번역 시스템 일단 꺼둠(원인 격리용) - renderFeed에서 각 행마다 바로 번역하는 방식으로 되돌림
+  // clearTimeout(translateDebounceTimer);
+  // translateDebounceTimer = setTimeout(() => {
+  //   translateRowsUpTo(Math.max(translateFrontier + TRANSLATE_STEP, idx + TRANSLATE_LOOKAHEAD), verses);
+  // }, 250);
+
+  // 텍스트 하이라이트/썸네일 활성화는 스크롤 위치에 맞춰 즉시 반영
+  document.querySelectorAll('.feed-row').forEach(r => r.classList.toggle('active-row', Number(r.dataset.idx) === idx));
+  document.querySelectorAll('.thumb').forEach(t => {
+    const isActive = Number(t.dataset.idx) === idx;
+    t.classList.toggle('active', isActive);
+    if (isActive) t.scrollIntoView({ block: 'nearest', inline: 'center' });
+  });
+
+  if (ttsOn) {
+    // TTS 켜져있으면: 첫 번째 선택언어로 다 읽은 뒤에 가운데 이미지 전환
+    speakVerse(v);
+  } else {
+    updateHero(v);
+    // TTS 없을 때: 구절이 바뀌면 설정한 시간만큼 자동스크롤 잠시 멈춤 (짧은 구절이 순식간에 지나가는 것 방지)
+    autoScrollPausedUntil = Date.now() + readDelaySeconds * 1000;
+  }
+}
+
+let speakToken = 0;
+function speakOne(text, lang, rate = 0.95){
+  return new Promise(resolve => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = langVoice(lang);
+    const voices = window.speechSynthesis.getVoices();
+    const match = voices.find(vo => vo.lang === utter.lang) || voices.find(vo => vo.lang && vo.lang.startsWith(lang));
+    if (match) utter.voice = match;
+    utter.rate = rate;
+    utter.onend = utter.onerror = resolve;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
+let isSpeakingSequence = false; // speechSynthesis.speaking은 언어 사이 찰나에 false가 되는 틈이 있어서, 직접 관리하는 플래그로 전체 시퀀스 끝까지 추적
+
+async function speakVerse(v){
+  const myToken = ++speakToken;
+  if (!('speechSynthesis' in window) || selectedLangs.length === 0) { updateHero(v); return; }
+  window.speechSynthesis.cancel();
+  isSpeakingSequence = true;
+
+  // 체크한 언어 전부를 순서대로 (예: 한/중/일/영 체크 시 한→중→일→영)
+  for (const lang of selectedLangs) {
+    if (myToken !== speakToken) { isSpeakingSequence = false; return; } // 그 사이 다른 절이 활성화됨 - 남은 언어는 안 읽고 중단
+    const text = await getVerseText(v, lang);
+    if (myToken !== speakToken) { isSpeakingSequence = false; return; }
+    if (!text) continue; // 이 언어는 번역 실패 - 다음 언어로
+    await speakOne(text, lang);
+    if (myToken !== speakToken) { isSpeakingSequence = false; return; }
+  }
+
+  isSpeakingSequence = false;
+  if (myToken === speakToken) {
+    updateHero(v); // 선택한 언어 다 읽고 나서야 이미지 전환
+    resyncActiveFromScroll(); // 재생중 스크롤이 더 갔으면 따라잡기
+  }
+}
+
+function updateHero(v){
+  document.getElementById('hero-ref').textContent = currentDevotionalDay ? `${dayNumToDateLabel(currentDevotionalDay.day)} (${currentDevotionalDay.day}일차) · ${formatVerseRef(v)}` : formatVerseRef(v);
+  markRead(v.ref); // 읽은 기록 - 진행률 캘린더/책별 진척도에 반영됨
+  const box = document.getElementById('hero-image-box');
+  box.querySelectorAll('img, .ph-text, .ph-badge').forEach(el => el.remove());
+  if (v.ph) {
+    const badge = document.createElement('div');
+    badge.className = 'ph-badge';
+    badge.textContent = I18N.t('placeholderImageBadge');
+    box.appendChild(badge);
+  }
+  const img = document.createElement('img');
+  img.decoding = 'async';
+  img.alt = v.ref;
+  loadWithWebpFallback(img, v.filename, 'full', () => {
+    // 우선순위: 1) 이 절이 속한 "가족"의 부모(대표) 이미지 2) 그래도 없으면 창세기 중 랜덤
+    const familyFallback = familyParentMap[v.ref];
+    const fallbackName = (familyFallback && familyFallback !== v.filename)
+      ? familyFallback
+      : (knownGoodImages.length > 0 ? knownGoodImages[Math.floor(Math.random() * knownGoodImages.length)] : null);
+    if (fallbackName) {
+      const fbStartStage = webpSupported ? 0 : 1;
+      img.dataset.fallbackStage = String(fbStartStage);
+      img.onload = () => {
+        if (img.dataset.fallbackStage === '0') noteWebpResult(true);
+        else if (img.dataset.fallbackStage === '1' && fbStartStage === 0) noteWebpResult(false);
+      };
+      img.onerror = () => {
+        const stage = Number(img.dataset.fallbackStage);
+        if (stage === 0) { img.dataset.fallbackStage = '1'; img.src = IMAGES_BASE_PATH + fallbackName; }
+        else {
+          // 가족부모 이미지마저 없으면(아직 그것도 생성 전) 창세기 랜덤으로 한번 더 시도
+          if (familyFallback && knownGoodImages.length > 0) {
+            const rnd = knownGoodImages[Math.floor(Math.random() * knownGoodImages.length)];
+            img.dataset.fallbackStage = '1';
+            img.onerror = () => { img.remove(); };
+            img.src = IMAGES_BASE_PATH + rnd;
+          } else {
+            img.remove();
+          }
+        }
+      };
+      img.src = fbStartStage === 0 ? IMAGES_BASE_PATH + webpName(fallbackName, 'full') : IMAGES_BASE_PATH + fallbackName;
+      img.style.opacity = '0.55'; // 대체 이미지임을 은은하게 표시(진짜 이미지와 구분)
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'ph-text';
+      ph.textContent = '🖼 아직 생성 안 됨';
+      box.insertBefore(ph, box.firstChild);
+      img.remove();
+    }
+  });
+  box.insertBefore(img, box.firstChild);
+
+  // 이미지 위 오버레이 자막 - 설정에서 고른 대표언어 (묵상모드면 N일차 프리픽스 추가)
+  const captionEl = document.getElementById('hero-caption');
+  const overlayLang = primaryLang || selectedLangs[0];
+  const prefix = ''; // 헤더(hero-ref)에 이미 날짜/일차가 나와서 오버레이 캡션엔 중복으로 안 넣음
+  captionEl.textContent = prefix;
+  if (overlayLang) {
+    getVerseDisplayText(v, overlayLang).then(text => { captionEl.textContent = prefix + (text || ''); });
+  }
+}
+
+/* ---------- 검색 ---------- */
+document.getElementById('toc-search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.toc-theme').forEach(themeEl => {
+    const text = themeEl.querySelector('.toc-theme-head .t').textContent.toLowerCase();
+    const match = text.includes(q);
+    themeEl.style.display = match || q === '' ? '' : 'none';
+  });
+});
+
+/* ---------- 사이드바 탭 ---------- */
+document.querySelectorAll('.sb-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sb-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------- 모바일 사이드바 토글 ---------- */
+document.getElementById('btn-mobile-menu').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.add('mobile-open');
+  document.getElementById('sidebar-backdrop').classList.add('show');
+});
+document.getElementById('sidebar-backdrop').addEventListener('click', closeMobileSidebar);
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-backdrop').classList.remove('show');
+}
+
+/* ---------- 자동 스크롤 ---------- */
+function getScrollContainer(){
+  // 데스크탑: #right-panel이 스크롤됨 / 모바일(860px 이하): CSS가 그걸 overflow:visible로 바꿔서 #main이 대신 스크롤됨
+  return window.innerWidth <= 860 ? document.getElementById('main') : document.getElementById('right-panel');
+}
+const feedEl = document.getElementById('right-panel'); // wheel/touchmove 감지용(일시정지 판단)은 기존대로 유지
+const btnAuto = document.getElementById('btn-autoscroll');
+const speedInput = document.getElementById('scroll-speed');
+const readDelayInput = document.getElementById('read-delay');
+const readDelayLabel = document.getElementById('read-delay-label');
+readDelayInput.value = readDelaySeconds;
+readDelayLabel.textContent = readDelaySeconds + '초';
+readDelayInput.addEventListener('input', () => {
+  readDelaySeconds = Number(readDelayInput.value);
+  readDelayLabel.textContent = readDelaySeconds + '초';
+  localStorage.setItem(READ_DELAY_KEY, readDelaySeconds);
+});
+
+btnAuto.addEventListener('click', () => {
+  if (autoScrollTimer) {
+    clearInterval(autoScrollTimer);
+    autoScrollTimer = null;
+    btnAuto.classList.remove('on');
+    btnAuto.textContent = I18N.t('autoscrollStart');
+  } else {
+    btnAuto.classList.add('on');
+    btnAuto.textContent = I18N.t('autoscrollStop');
+    autoScrollTimer = setInterval(() => {
+      if (Date.now() < autoScrollPausedUntil) return; // 수동 스크롤 직후엔 잠시 대기
+      if (ttsOn && isSpeakingSequence) return; // TTS 읽는 중엔(다국어 전체 시퀀스 끝날 때까지) 자동스크롤도 정지
+      getScrollContainer().scrollTop += Number(speedInput.value);
+    }, 30);
+  }
+});
+// 사용자가 수동으로 스크롤하면 자동스크롤 2초간 일시정지
+feedEl.addEventListener('wheel', () => { autoScrollPausedUntil = Date.now() + 2000; });
+feedEl.addEventListener('touchmove', () => { autoScrollPausedUntil = Date.now() + 2000; });
+
+/* ══════════════════════════════════════════════════════════
+   진행률(읽은 기록) + 캘린더 + 마지막 위치 기억 + 그리드뷰 + 캡처버튼
+   ══════════════════════════════════════════════════════════ */
+
+/* ---------- 읽은 기록 저장 (기존 studyLog 패턴과 동일) ---------- */
+const READ_LOG_KEY = 'bible_gallery_read_log_v1';
+let readLog = {};
+try { readLog = JSON.parse(localStorage.getItem(READ_LOG_KEY) || '{}'); } catch(e) { readLog = {}; }
+function saveReadLog(){ try { localStorage.setItem(READ_LOG_KEY, JSON.stringify(readLog)); } catch(e){} }
+function todayKey(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function markRead(ref){
+  const key = todayKey();
+  if (!readLog[key]) readLog[key] = [];
+  if (!readLog[key].includes(ref)) { readLog[key].push(ref); saveReadLog(); }
+}
+
+/* ---------- 마지막 위치 기억 (다시 열었을 때 이어서) ---------- */
+const LAST_POS_KEY = 'bible_gallery_last_pos_v1';
+function saveLastPosition(book, idx){
+  try { localStorage.setItem(LAST_POS_KEY, JSON.stringify({ book, idx })); } catch(e){}
+}
+async function restoreLastPosition(){
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LAST_POS_KEY) || 'null'); } catch(e){}
+  if (!saved || !saved.book) {
+    // 히스토리 없음(첫 사용자) - 창세기 1:1을 기본값으로 열어줌 (빈 화면으로 두지 않음)
+    saved = { book: 'Gen', idx: 0 };
+  }
+  const bookMeta = bookIndex.find(b => b.code === saved.book);
+  if (!bookMeta) return;
+  const themeEl = document.querySelector(`.toc-theme[data-code="${saved.book}"]`);
+  if (themeEl) {
+    themeEl.classList.add('open');
+    await ensureBookLoaded(saved.book, themeEl);
+  }
+  await openBookFeed(saved.book, saved.idx || 0);
+}
+
+/* ---------- 캘린더 (기존 TOPIK 학습캘린더 패턴 재사용) ---------- */
+let calYear, calMonth;
+function renderCalendarWeekdays(){
+  document.getElementById('cal-weekday-row').innerHTML =
+    I18N.weekdayNames().map(w => `<div class="cal-weekday">${w}</div>`).join('');
+}
+function renderCalendar(year, month){
+  calYear = year; calMonth = month;
+  document.getElementById('cal-month-title').textContent = I18N.monthTitle(year, month);
+  renderCalendarWeekdays();
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayStr = todayKey();
+  for (let i=0; i<firstDay; i++){
+    const e = document.createElement('div'); e.className = 'cal-day is-empty'; grid.appendChild(e);
+  }
+  for (let d=1; d<=daysInMonth; d++){
+    const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const refs = readLog[dateKey] || [];
+    const cell = document.createElement('div');
+    cell.className = 'cal-day' + (refs.length ? ' has-study' : '') + (dateKey === todayStr ? ' is-today' : '');
+    cell.innerHTML = `<span>${d}</span>` + (refs.length ? `<span class="cal-day-badge">${refs.length}</span>` : '');
+    if (refs.length) cell.addEventListener('click', () => showDayGrid(dateKey, refs));
+    grid.appendChild(cell);
+  }
+}
+document.getElementById('cal-prev-month').addEventListener('click', () => {
+  let y = calYear, m = calMonth - 1; if (m < 0) { m = 11; y--; } renderCalendar(y, m);
+});
+document.getElementById('cal-next-month').addEventListener('click', () => {
+  let y = calYear, m = calMonth + 1; if (m > 11) { m = 0; y++; } renderCalendar(y, m);
+});
+
+/* ---------- 책별 진행률 ---------- */
+function renderBookProgressList(){
+  const listEl = document.getElementById('book-progress-list');
+  listEl.innerHTML = '';
+  const allReadRefs = new Set(Object.values(readLog).flat());
+  bookIndex.forEach(book => {
+    let readCount = 0;
+    allReadRefs.forEach(ref => { if (ref.startsWith(book.code + '.')) readCount++; });
+    const pct = book.count ? Math.round(readCount / book.count * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'book-prog-row';
+    row.innerHTML = `
+      <div class="bp-top"><span>${getBookTitle(book.code)}</span><span>${readCount}/${book.count}</span></div>
+      <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>`;
+    row.addEventListener('click', () => showBookGrid(book.code));
+    listEl.appendChild(row);
+  });
+}
+
+/* ---------- 진행률 탭 열릴 때마다 최신화 ---------- */
+document.querySelectorAll('.sb-tab').forEach(tab => {
+  if (tab.dataset.tab === 'progress') {
+    tab.addEventListener('click', () => {
+      if (!calYear) { const now = new Date(); renderCalendar(now.getFullYear(), now.getMonth()); }
+      else renderCalendar(calYear, calMonth);
+      renderBookProgressList();
+    });
+  }
+});
+
+/* ---------- 그리드뷰 (날짜 클릭 / 책 진행률 클릭 시 메인영역에 표시) ---------- */
+let returnTarget = null; // {type:'day', dateKey, refs} 또는 {type:'book', code}
+
+async function showDayGrid(dateKey, refs){
+  returnTarget = { type:'day', dateKey, refs };
+  const allReadRefs = new Set(Object.values(readLog).flat());
+  const items = refs.map(ref => ({ ref, read: allReadRefs.has(ref) }));
+  await renderGridView(`${dateKey} 읽은 구절 (${refs.length}개)`, items);
+  closeMobileSidebar();
+}
+
+async function showBookGrid(code){
+  await ensureBookLoaded(code, null);
+  const verses = bookCache[code];
+  const allReadRefs = new Set(Object.values(readLog).flat());
+  returnTarget = { type:'book', code };
+  const items = verses.map(v => ({ ref: v.ref, read: allReadRefs.has(v.ref) }));
+  const bookMeta = bookIndex.find(b => b.code === code);
+  const readCnt = items.filter(i => i.read).length;
+  await renderGridView(`${getBookTitle(code)} 전체 (읽음 ${readCnt} / 안읽음 ${items.length - readCnt})`, items);
+  closeMobileSidebar();
+}
+
+async function renderGridView(title, items){
+  const gv = document.getElementById('grid-view');
+  document.getElementById('center-panel').style.display = 'none';
+  document.getElementById('right-panel').style.display = 'none';
+  gv.classList.add('active');
+  gv.innerHTML = `<div class="grid-view-header"><h2>${title}</h2><button class="gv-back" id="gv-close">← 닫기</button></div><div style="font-family:var(--f-ui);color:var(--ink-soft);font-size:13px;">불러오는 중…</div>`;
+  document.getElementById('gv-close').addEventListener('click', closeGridView);
+
+  const codes = [...new Set(items.map(i => i.ref.split('.')[0]))];
+  for (const c of codes) await ensureBookLoaded(c, null);
+
+  const rowsHtml = items.map(item => {
+    const code = item.ref.split('.')[0];
+    const verses = bookCache[code] || [];
+    const v = verses.find(vv => vv.ref === item.ref);
+    if (!v) return '';
+    const bookMeta = bookIndex.find(b => b.code === code);
+    return `
+      <tr class="gv-row ${item.read ? '' : 'is-unread'}" data-ref="${item.ref}">
+        <td>${getBookTitle(code)}</td>
+        <td>${v.ch}:${v.vs}</td>
+        <td><img class="gv-thumb" src="${IMAGES_BASE_PATH + webpName(v.filename, 'thumb')}" onerror="gvThumbFallback(this, '${v.filename}')" loading="lazy" decoding="async"></td>
+        <td class="gv-text">${(v.kr || '').slice(0, 50)}</td>
+        <td class="gv-status ${item.read ? 'read' : 'unread'}">${item.read ? '✓ 읽음' : '미열람'}</td>
+      </tr>`;
+  }).join('');
+
+  gv.innerHTML = `
+    <div class="grid-view-header"><h2>${title}</h2><button class="gv-back" id="gv-close">← 닫기</button></div>
+    <table class="gv-table">
+      <thead><tr><th>책</th><th>구절</th><th>썸네일</th><th>본문</th><th>상태</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+  document.getElementById('gv-close').addEventListener('click', closeGridView);
+  gv.querySelectorAll('.gv-row').forEach(row => {
+    row.addEventListener('click', () => jumpToRefFromGrid(row.dataset.ref));
+  });
+}
+
+function closeGridView(){
+  document.getElementById('grid-view').classList.remove('active');
+  document.getElementById('grid-view').innerHTML = '';
+  document.getElementById('center-panel').style.display = '';
+  document.getElementById('right-panel').style.display = '';
+}
+
+async function jumpToRefFromGrid(ref){
+  const code = ref.split('.')[0];
+  await ensureBookLoaded(code, null);
+  const idx = bookCache[code].findIndex(v => v.ref === ref);
+  closeGridView();
+  await openBookFeed(code, idx >= 0 ? idx : 0);
+  showBackToSourcePill();
+}
+
+function showBackToSourcePill(){
+  const btn = document.getElementById('back-to-source');
+  if (!returnTarget) { btn.classList.remove('show'); return; }
+  const label = returnTarget.type === 'day'
+    ? `← ${returnTarget.dateKey} 목록으로`
+    : `← ${getBookTitle(returnTarget.code)} 목록으로`;
+  btn.textContent = label;
+  btn.classList.add('show');
+}
+document.getElementById('back-to-source').addEventListener('click', () => {
+  if (!returnTarget) return;
+  if (returnTarget.type === 'day') showDayGrid(returnTarget.dateKey, returnTarget.refs);
+  else showBookGrid(returnTarget.code);
+});
+
+/* ---------- 히어로 이미지 위 캡처(다운로드) 버튼 - 오버레이 자막까지 같이 합성 ---------- */
+function wrapCanvasText(ctx, text, maxWidth){
+  // 글자 단위로 줄바꿈 (한/중/일처럼 띄어쓰기 없는 언어도 정상 처리되도록 단순화)
+  const lines = [];
+  let current = '';
+  for (const ch of text) {
+    const test = current + ch;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = ch;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+/* ---------- 메인 히어로 이미지의 TTS+속도조절 (지금 보고있는 구절 하나 읽기) ---------- */
+let heroRate = 1.0;
+let heroSpeaking = false;
+let heroSpeakToken = 0;
+const heroSpeedLabel = document.getElementById('hero-speed-label');
+document.getElementById('hero-speed-down').addEventListener('click', () => {
+  heroRate = Math.max(0.5, Math.round((heroRate - 0.1) * 10) / 10);
+  heroSpeedLabel.textContent = heroRate.toFixed(1) + 'x';
+});
+document.getElementById('hero-speed-up').addEventListener('click', () => {
+  heroRate = Math.min(2.0, Math.round((heroRate + 0.1) * 10) / 10);
+  heroSpeedLabel.textContent = heroRate.toFixed(1) + 'x';
+});
+document.getElementById('hero-tts-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('hero-tts-btn');
+  if (heroSpeaking) {
+    heroSpeakToken++;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    heroSpeaking = false;
+    btn.classList.remove('playing');
+    btn.textContent = '🔊';
+    return;
+  }
+  const v = currentVerses && currentVerses[activeIndex];
+  if (!v || !('speechSynthesis' in window)) return;
+  const lang = primaryLang || selectedLangs[0] || 'ko';
+  const text = await getVerseText(v, lang);
+  if (!text) return;
+  heroSpeaking = true;
+  const myToken = ++heroSpeakToken;
+  btn.classList.add('playing');
+  btn.textContent = '⏸';
+  await speakOne(text, lang, heroRate);
+  if (myToken === heroSpeakToken) {
+    heroSpeaking = false;
+    btn.classList.remove('playing');
+    btn.textContent = '🔊';
+  }
+});
+
+document.getElementById('btn-capture').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const img = document.querySelector('#hero-image-box img');
+  if (!img || !img.getAttribute('src')) return;
+  const captionRaw = document.getElementById('hero-caption').textContent || '';
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth || 1024;
+  canvas.height = img.naturalHeight || 1024;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  if (captionRaw) {
+    const padding = canvas.width * 0.03;
+    const maxTextWidth = canvas.width - padding * 2;
+    // 오버레이 폰트크기 설정(captionSize, 화면표시 px)을 이미지 실제 해상도 기준으로 비례 확대
+    const fontPx = Math.max(16, Math.round(canvas.width / 700 * captionSize));
+    ctx.font = `${fontPx}px "Noto Serif KR", sans-serif`;
+
+    // 원문+병음처럼 줄바꿈(\n) 있으면 각각 먼저 나누고, 그 안에서 또 자동 줄바꿈
+    const allLines = captionRaw.split('\n').flatMap(part => wrapCanvasText(ctx, part, maxTextWidth));
+    const lineHeight = fontPx * 1.45;
+    const boxHeight = allLines.length * lineHeight + padding * 1.6;
+
+    const grad = ctx.createLinearGradient(0, canvas.height - boxHeight, 0, canvas.height);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,.72)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, canvas.height - boxHeight, canvas.width, boxHeight);
+
+    ctx.fillStyle = '#fff';
+    ctx.textBaseline = 'top';
+    ctx.shadowColor = 'rgba(0,0,0,.6)';
+    ctx.shadowBlur = fontPx * 0.25;
+    let y = canvas.height - boxHeight + padding * 0.5;
+    allLines.forEach(line => {
+      ctx.fillText(line, padding, y);
+      y += lineHeight;
+    });
+  }
+
+  canvas.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = img.src.split('/').pop().replace(/\.(png|webp)$/i, '') + '_caption.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+});
+
+/* ══════════════════════════════════════════════════════════
+   오늘의 묵상 (365일 연대기 통독표)
+   ══════════════════════════════════════════════════════════ */
+const DEVOTIONAL_PATH = 'devotional_365.json';
+let devotionalData = null;
+let devotionalMode = false; // 지금 우측패널이 묵상목록 모드인지 (자막피드 모드랑 구분)
+let currentDevotionalDay = null; // 묵상 모드에서 현재 보고 있는 날짜(N일차) - updateHero 캡션에 프리픽스로 씀
+
+function getDayOfYear(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  return Math.floor((now - start) / 86400000) + 1;
+}
+
+// N일차(1~365) -> "2026년 8월 2일" 형태의 실제 날짜로 변환 (올해 기준)
+function dayNumToDateLabel(dayNum){
+  const year = new Date().getFullYear();
+  const d = new Date(year, 0, dayNum); // 1월1일 + (dayNum-1)일
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+async function loadDevotionalData(){
+  if (devotionalData) return devotionalData;
+  const res = await fetch(DEVOTIONAL_PATH);
+  devotionalData = await res.json();
+  return devotionalData;
+}
+
+// 사이드바 "묵상" 탭 열릴 때 오늘 날짜 미리보기
+document.querySelectorAll('.sb-tab').forEach(tab => {
+  if (tab.dataset.tab === 'devotional') {
+    tab.addEventListener('click', async () => {
+      const data = await loadDevotionalData();
+      const todayDay = Math.min(getDayOfYear(), data.length);
+      const today = data[todayDay - 1];
+      document.getElementById('devo-today-preview').innerHTML =
+        `<b>${dayNumToDateLabel(todayDay)} (${todayDay}일차)</b> · ${today.ranges.length}구간<br>${today.ranges.join(' · ')}`;
+    });
+  }
+});
+
+document.getElementById('btn-open-devotional').addEventListener('click', async () => {
+  await openDevotionalMode();
+  closeMobileSidebar();
+});
+
+// 영문 책이름 -> 우리 3글자 코드 (통독표 파싱용)
+const EN_TO_CODE = {
+  genesis:'Gen', exodus:'Exo', leviticus:'Lev', numbers:'Num', deuteronomy:'Deu',
+  joshua:'Jos', judges:'Jdg', ruth:'Rut', '1samuel':'1Sa', '2samuel':'2Sa',
+  '1kings':'1Ki', '2kings':'2Ki', '1chronicles':'1Ch', '2chronicles':'2Ch', ezra:'Ezr',
+  nehemiah:'Neh', esther:'Est', job:'Job', psalms:'Psa', psalm:'Psa', proverbs:'Pro',
+  ecclesiastes:'Ecc', songofsolomon:'Sol', songofsongs:'Sol', isaiah:'Isa', jeremiah:'Jer', lamentations:'Lam',
+  ezekiel:'Eze', daniel:'Dan', hosea:'Hos', joel:'Joe', amos:'Amo',
+  obadiah:'Oba', jonah:'Jon', micah:'Mic', nahum:'Nah', habakkuk:'Hab',
+  zephaniah:'Zep', haggai:'Hag', zechariah:'Zec', malachi:'Mal', matthew:'Mat',
+  mark:'Mar', luke:'Luk', john:'Joh', acts:'Act', romans:'Rom',
+  '1corinthians':'1Co', '2corinthians':'2Co', galatians:'Gal', ephesians:'Eph', philippians:'Phi',
+  colossians:'Col', '1thessalonians':'1Th', '2thessalonians':'2Th', '1timothy':'1Ti', '2timothy':'2Ti',
+  titus:'Tit', philemon:'Phm', hebrews:'Heb', james:'Jam', '1peter':'1Pe',
+  '2peter':'2Pe', '1john':'1Jo', '2john':'2Jo', '3john':'3Jo', jude:'Jud', revelation:'Rev',
+};
+const RANGE_RE_FULL = /^([1-3]?[A-Za-z]+)\s+(\d+):(\d+)(?:-(\d+):(\d+)|-(\d+))?$/;
+const RANGE_RE_CHONLY = /^([1-3]?[A-Za-z]+)\s+(\d+)(?:-(\d+))?$/;
+
+function parseRange(rangeStr){
+  const s = rangeStr.trim();
+  let m = s.match(RANGE_RE_FULL);
+  if (m) {
+    const code = EN_TO_CODE[m[1].toLowerCase()];
+    if (!code) return null;
+    const startCh = Number(m[2]), startV = Number(m[3]);
+    let endCh = startCh, endV = startV;
+    if (m[4] && m[5]) { endCh = Number(m[4]); endV = Number(m[5]); }
+    else if (m[6]) { endV = Number(m[6]); }
+    return { code, startCh, startV, endCh, endV };
+  }
+  m = s.match(RANGE_RE_CHONLY);
+  if (m) {
+    const code = EN_TO_CODE[m[1].toLowerCase()];
+    if (!code) return null;
+    const startCh = Number(m[2]);
+    const endCh = m[3] ? Number(m[3]) : startCh;
+    return { code, startCh, startV: 1, endCh, endV: 9999 }; // 장 전체
+  }
+  return null;
+}
+
+// 파싱된 범위 + 그 책의 전체 구절배열(ensureBookLoaded로 이미 로드된 것) -> 실제 구절 객체 리스트
+function versesInRange(parsed, bookVerses){
+  return bookVerses.filter(v => {
+    const ch = Number(v.ch), vs = Number(v.vs);
+    if (ch < parsed.startCh || ch > parsed.endCh) return false;
+    if (ch === parsed.startCh && vs < parsed.startV) return false;
+    if (ch === parsed.endCh && vs > parsed.endV) return false;
+    return true;
+  });
+}
+
+async function openDevotionalDayDetail(d){
+  const feed = document.getElementById('feed');
+  feed.innerHTML = `<div style="padding:14px;font-family:var(--f-ui);color:var(--ink-soft);font-size:13px;">불러오는 중…</div>`;
+
+  // 이 날짜의 모든 범위 파싱 (파싱 실패한 것도 화면에 표시해서 원인 보이게)
+  const parsedRanges = [];
+  const parseFailed = [];
+  d.ranges.forEach(r => {
+    const p = parseRange(r);
+    if (p) parsedRanges.push(p); else parseFailed.push(r);
+  });
+
+  const codes = [...new Set(parsedRanges.map(p => p.code))];
+  const loadFailed = [];
+  for (const c of codes) {
+    try {
+      await ensureBookLoaded(c, null);
+    } catch (e) {
+      console.error('책 로드 실패:', c, e);
+      loadFailed.push(c);
+    }
+  }
+
+  let allVerses = [];
+  parsedRanges.forEach(p => {
+    const bookVerses = bookCache[p.code] || [];
+    if (bookVerses.length === 0) return; // 로드 실패한 책은 건너뛰고 나머지는 계속 진행
+    allVerses = allVerses.concat(versesInRange(p, bookVerses).map(v => ({ ...v, _code: p.code })));
+  });
+
+  if (parseFailed.length) console.warn('범위 파싱 실패:', parseFailed);
+  console.log(`[묵상 ${d.day}일차] 범위 ${d.ranges.length}개 -> 파싱성공 ${parsedRanges.length}개, 구절 ${allVerses.length}개`);
+
+  feed.innerHTML = '';
+  const backRow = document.createElement('div');
+  backRow.className = 'devo-back-row';
+  backRow.style.cursor = 'pointer';
+  backRow.innerHTML = `<div class="row-ref" style="color:var(--teal);">← 365일 목록으로</div>`;
+  backRow.addEventListener('click', () => openDevotionalMode());
+  feed.appendChild(backRow);
+
+  const header = document.createElement('div');
+  header.style.cssText = 'padding:10px 12px;font-family:var(--f-ui);font-size:12px;color:var(--ink-soft);';
+  header.textContent = `${dayNumToDateLabel(d.day)} (${d.day}일차) · 총 ${allVerses.length}구절`;
+  feed.appendChild(header);
+
+  const frag = document.createDocumentFragment();
+  if (allVerses.length === 0) {
+    const errBox = document.createElement('div');
+    errBox.style.cssText = 'padding:12px;font-family:var(--f-ui);font-size:12.5px;color:#c0392b;';
+    errBox.innerHTML = `⚠️ 구절을 못 찾았습니다.<br>
+      원본 범위: ${d.ranges.join(', ')}<br>
+      ${parseFailed.length ? '파싱 실패: ' + parseFailed.join(', ') + '<br>' : ''}
+      ${loadFailed.length ? '책 로딩 실패: ' + loadFailed.join(', ') + '<br>' : ''}
+      (브라우저 개발자도구 콘솔에 더 자세한 로그가 있습니다)`;
+    frag.appendChild(errBox);
+  }
+  allVerses.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'feed-row devo-verse-row';
+    row.dataset.idx = i;
+    row.innerHTML = `<div class="row-ref">${v.ch}:${v.vs}</div>`;
+    selectedLangs.forEach(lang => {
+      const line = document.createElement('div');
+      line.className = 'lang-line';
+      line.dataset.lang = lang;
+      line.innerHTML = `<span class="tag">${langLabel(lang)}</span><span class="txt pending">…</span>`;
+      row.appendChild(line);
+      getVerseDisplayText(v, lang).then(text => {
+        const el = line.querySelector('.txt');
+        if (text) { el.textContent = text; el.classList.remove('pending'); }
+        else { el.textContent = '(번역 불가)'; }
+      });
+    });
+    row.addEventListener('click', () => scrollToVerse(i));
+    frag.appendChild(row);
+  });
+  feed.appendChild(frag);
+  // translateFrontier / translateRowsUpTo 윈도우번역 일단 꺼둠(원인 격리용)
+
+  document.getElementById('current-book-title').textContent = `${dayNumToDateLabel(d.day)} (${d.day}일차) 묵상`;
+  document.getElementById('feed-progress').textContent = `${allVerses.length}구절`;
+
+  currentDevotionalDay = d; // updateHero의 오버레이 캡션에 "N일차" 프리픽스 붙이는 용도
+  currentBook = null;       // 일반 책 읽기 모드 아님(진행률/마지막위치 기록 안 되게)
+
+  currentVerses = allVerses; // scrollToVerse 등에서 공통으로 씀
+  // preloadImages(allVerses); // 제거함 - 번역 API 요청이랑 네트워크를 경합해서 텍스트 로딩이 늦어지고,
+  // 그 결과 "텍스트 채워지며 레이아웃 밀림" 구간이 길어져 스크롤 오작동을 유발하는 원인이었음
+
+  if (allVerses.length) {
+    setupScrollSync(allVerses); // 일반 책읽기와 동일한 스크롤감지+TTS+자동이미지전환 연결
+    setActiveVerse(0, allVerses);
+  }
+}
+
+/* ---------- 묵상 간단히 보기: 리스트 없이 이미지+합쳐진 본문, 이전/오늘/다음 네비게이션 ---------- */
+async function openDevotionalCombinedView(dayNum){
+  const data = await loadDevotionalData();
+  dayNum = Math.max(1, Math.min(dayNum, data.length));
+  const d = data[dayNum - 1];
+  const todayDay = Math.min(getDayOfYear(), data.length);
+
+  closeGridView(); // 혹시 열려있으면 정리
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // 다른 날짜로 넘어갈 때 재생 중이던 TTS 정지
+  currentDevotionalDay = null;
+  currentBook = null;
+  returnTarget = null;
+  document.getElementById('back-to-source').classList.remove('show');
+  if (rowObserver) rowObserver.disconnect(); // 리스트 스크롤 동기화는 이 화면엔 필요 없음
+
+  document.getElementById('center-panel').style.display = 'none';
+  document.getElementById('right-panel').style.display = 'none';
+  const gv = document.getElementById('grid-view'); // 기존 그리드뷰 오버레이 영역 재사용
+  gv.classList.add('active');
+  gv.innerHTML = `<div class="devo-combined-loading">불러오는 중…</div>`;
+
+  // 범위를 실제 구절로 펼침 (묵상 상세뷰와 동일 로직 재사용)
+  const parsedRanges = d.ranges.map(parseRange).filter(Boolean);
+  const codes = [...new Set(parsedRanges.map(p => p.code))];
+  for (const c of codes) { try { await ensureBookLoaded(c, null); } catch(e){ console.error('책 로드 실패:', c, e); } }
+  let allVerses = [];
+  parsedRanges.forEach(p => {
+    const bookVerses = bookCache[p.code] || [];
+    allVerses = allVerses.concat(versesInRange(p, bookVerses).map(v => ({ ...v, _code: p.code })));
+  });
+
+  const lang = primaryLang || selectedLangs[0] || 'ko';
+  const texts = await Promise.all(allVerses.map(v => getVerseDisplayText(v, lang)));
+  const paragraphs = allVerses.map((v, i) => {
+    const text = (texts[i] || '').trim();
+    if (!text) return '';
+    const bookLabel = getBookTitle(v._code);
+    // 원문(개역한글 등) 자체가 절 끝에 마침표를 안 붙이는 경우가 많아서, 임의로 추가하지 않고 원문 그대로 둠
+    return `<p data-idx="${i}">${text}<span class="verse-cite">〈${bookLabel} ${v.ch}:${v.vs}〉</span></p>`;
+  }).filter(Boolean);
+  const combinedHtml = paragraphs.join('') || '<p>(본문 없음)</p>';
+  const isEnglish = lang === 'en';
+
+  // 대표이미지는 실제로 펼친 구절배열의 첫 번째(allVerses[0])를 그대로 씀 -
+  // 미리 계산해둔 d.first_filename은 파이썬 파서 기준이라 JS 파서(런타임)랑 어긋날 수 있어서 안 씀
+  const heroPick = allVerses.length ? allVerses[0] : null;
+
+  gv.innerHTML = `
+    <div class="devo-nav-header">
+      <button id="devo-nav-prev">‹ 이전일자</button>
+      <div class="devo-nav-title">${dayNumToDateLabel(d.day)} (${d.day}일차)</div>
+      <button id="devo-today-btn">오늘</button>
+      <button id="devo-nav-next">다음일자 ›</button>
+    </div>
+    <div class="devo-combined-body">
+      <div class="devo-combined-img-box" id="devo-combined-img-box">
+        <div class="devo-tts-controls">
+          <div class="devo-tts-speed">
+            <button id="devo-speed-down">−</button>
+            <span id="devo-speed-label">1.0x</span>
+            <button id="devo-speed-up">+</button>
+          </div>
+          <button id="devo-tts-btn" title="본문 읽어주기">🔊</button>
+        </div>
+      </div>
+      <div class="devo-combined-text${isEnglish ? ' is-en' : ''}">${combinedHtml}</div>
+    </div>`;
+
+  // 이미지 (webp->png->대체이미지 폴백 전부 재사용)
+  if (heroPick && heroPick.filename) {
+    const box = document.getElementById('devo-combined-img-box');
+    const img = document.createElement('img');
+    img.decoding = 'async';
+    img.alt = heroPick.ref || '';
+    loadWithWebpFallback(img, heroPick.filename, 'full', () => {
+      const familyFallback = familyParentMap[heroPick.ref];
+      const fb = (familyFallback && familyFallback !== heroPick.filename)
+        ? familyFallback
+        : (knownGoodImages.length > 0 ? knownGoodImages[Math.floor(Math.random() * knownGoodImages.length)] : null);
+      if (fb) {
+        img.dataset.fallbackStage = '1'; // 이제부터는 이 대체이미지 자체의 실패만 처리(원래 폴백로직 재진입 방지)
+        img.onerror = () => { img.remove(); }; // 대체이미지마저 실패하면 조용히 포기(무한 연쇄방지) - 사진칸은 배경패턴만 남음
+        img.src = IMAGES_BASE_PATH + fb;
+        img.style.opacity = '0.55';
+      } else {
+        img.remove();
+        const ph = document.createElement('div');
+        ph.className = 'ph-text';
+        ph.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-soft);';
+        ph.textContent = '🖼 아직 생성 안 됨';
+        box.appendChild(ph); // innerHTML 통째로 안 바꿔서 TTS컨트롤 버튼은 그대로 유지됨
+      }
+    });
+    box.appendChild(img);
+  }
+
+  document.getElementById('devo-nav-prev').addEventListener('click', () => openDevotionalCombinedView(dayNum - 1));
+  document.getElementById('devo-nav-next').addEventListener('click', () => openDevotionalCombinedView(dayNum + 1));
+  document.getElementById('devo-today-btn').addEventListener('click', () => openDevotionalCombinedView(todayDay));
+
+  // 이미지 우측하단 재생/정지 버튼 + 속도조절 - 그날 본문 전체를 구절 순서대로 읽어주고, 읽는 중인 문단을 강조표시
+  const ttsBtn = document.getElementById('devo-tts-btn');
+  const speedLabel = document.getElementById('devo-speed-label');
+  let devoSpeaking = false;
+  let devoSpeakToken = 0;
+  let devoRate = 1.0;
+
+  function updateSpeedLabel(){ speedLabel.textContent = devoRate.toFixed(1) + 'x'; }
+  document.getElementById('devo-speed-down').addEventListener('click', () => {
+    devoRate = Math.max(0.5, Math.round((devoRate - 0.1) * 10) / 10);
+    updateSpeedLabel();
+  });
+  document.getElementById('devo-speed-up').addEventListener('click', () => {
+    devoRate = Math.min(2.0, Math.round((devoRate + 0.1) * 10) / 10);
+    updateSpeedLabel();
+  });
+
+  function highlightParagraph(idx){
+    const container = document.querySelector('.devo-combined-text');
+    container.querySelectorAll('p.reading-now').forEach(p => p.classList.remove('reading-now'));
+    const p = container.querySelector(`p[data-idx="${idx}"]`);
+    if (p) {
+      p.classList.add('reading-now');
+      p.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+
+  ttsBtn.addEventListener('click', async () => {
+    if (devoSpeaking) {
+      devoSpeakToken++; // 진행 중이던 재생 루프를 다음 체크지점에서 멈추게 함
+      window.speechSynthesis.cancel();
+      devoSpeaking = false;
+      ttsBtn.classList.remove('playing');
+      ttsBtn.textContent = '🔊';
+      document.querySelectorAll('.devo-combined-text p.reading-now').forEach(p => p.classList.remove('reading-now'));
+      return;
+    }
+    if (!('speechSynthesis' in window)) return;
+    devoSpeaking = true;
+    const myToken = ++devoSpeakToken;
+    ttsBtn.classList.add('playing');
+    ttsBtn.textContent = '⏸';
+    for (let i = 0; i < texts.length; i++) {
+      if (myToken !== devoSpeakToken) return; // 정지 버튼 눌렸으면 중단
+      const text = texts[i];
+      if (!text) continue;
+      highlightParagraph(i);
+      await speakOne(text, lang, devoRate);
+      if (myToken !== devoSpeakToken) return;
+    }
+    devoSpeaking = false;
+    ttsBtn.classList.remove('playing');
+    ttsBtn.textContent = '🔊';
+    document.querySelectorAll('.devo-combined-text p.reading-now').forEach(p => p.classList.remove('reading-now'));
+  });
+}
+
+document.getElementById('btn-open-devotional-simple').addEventListener('click', async () => {
+  const data = await loadDevotionalData();
+  const todayDay = Math.min(getDayOfYear(), data.length);
+  await openDevotionalCombinedView(todayDay);
+  closeMobileSidebar();
+});
+
+const preloadAttempted = new Set(); // 이미 프리로드 시도한 파일명 - 중복호출로 같은 파일 반복요청 방지
+
+function preloadImages(verses, limit = 10){
+  // 하루치 전체(수십 구절)를 다 미리 받으면 아직 생성 안 된 이미지까지 대량 404가 나서
+  // 네트워크만 낭비하고 실제 클릭 반응성에도 방해가 될 수 있음 - 앞쪽 몇 개만 미리 받음
+  verses.slice(0, limit).forEach(v => {
+    if (preloadAttempted.has(v.filename)) return; // 이미 시도했으면 건너뜀(중복 호출 방지)
+    preloadAttempted.add(v.filename);
+    const img = new Image();
+    img.src = IMAGES_BASE_PATH + webpName(v.filename, 'full');
+    img.onerror = () => { img.src = IMAGES_BASE_PATH + v.filename; }; // webp 없으면 원본으로 폴백해서 미리받기
+  });
+}
+
+
+
+async function openDevotionalMode(){
+  closeGridView(); // 혹시 그리드뷰 열려있으면 닫기
+  devotionalMode = true;
+  currentBook = null; // 일반 책 읽기 모드 아님을 표시
+  returnTarget = null;
+  document.getElementById('back-to-source').classList.remove('show');
+
+  const data = await loadDevotionalData();
+  document.getElementById('current-book-title').textContent = '오늘의 묵상 (365일 연대기 통독)';
+  document.getElementById('feed-progress').textContent = `${data.length}일`;
+
+  const todayDay = Math.min(getDayOfYear(), data.length);
+
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  data.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'feed-row devo-row';
+    row.dataset.day = d.day;
+    if (d.day === todayDay) row.classList.add('active-row');
+    row.innerHTML = `
+      <div class="row-ref">${dayNumToDateLabel(d.day)} (${d.day}일차)${d.day === todayDay ? ' · 오늘' : ''}</div>
+      <div class="lang-line"><span class="txt">${d.ranges.join(' · ')}</span></div>`;
+    row.addEventListener('click', () => openDevotionalDayDetail(d));
+    frag.appendChild(row);
+  });
+  feed.appendChild(frag);
+
+  // 썸네일 그리드는 묵상모드에선 의미 없으니 비움
+  document.getElementById('thumb-grid').innerHTML = '';
+
+  showDevotionalDay(data[todayDay - 1]);
+  // 오늘 항목으로 스크롤
+  const todayRow = document.querySelector(`.devo-row[data-day="${todayDay}"]`);
+  if (todayRow) todayRow.scrollIntoView({ block: 'center' });
+}
+
+function showDevotionalDay(d){
+  document.querySelectorAll('.devo-row').forEach(r => r.classList.toggle('active-row', Number(r.dataset.day) === d.day));
+
+  document.getElementById('hero-ref').textContent = `${dayNumToDateLabel(d.day)} (${d.day}일차)`;
+  const box = document.getElementById('hero-image-box');
+  box.querySelectorAll('img, .ph-text').forEach(el => el.remove());
+  if (d.first_filename) {
+    const img = document.createElement('img');
+    img.decoding = 'async';
+    img.alt = d.first_ref || '';
+    loadWithWebpFallback(img, d.first_filename, 'full', () => {
+      const ph = document.createElement('div');
+      ph.className = 'ph-text';
+      ph.textContent = '🖼 아직 생성 안 됨';
+      box.insertBefore(ph, box.firstChild);
+      img.remove();
+    });
+    box.insertBefore(img, box.firstChild);
+  }
+
+  // 오버레이 자막 - "N일차 · 읽을 범위"
+  const captionEl = document.getElementById('hero-caption');
+  captionEl.textContent = d.ranges.join(' · '); // 헤더에 날짜 이미 있어서 캡션엔 범위만
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+      console.warn('서비스워커 등록 실패(오프라인 캐싱 없이 계속 동작함):', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
