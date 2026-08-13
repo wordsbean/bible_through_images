@@ -595,7 +595,7 @@ document.addEventListener('uilangchange', () => { if (calYear) renderCalendar(ca
   window.romanizeSentence = romanizeSentence;
 })();
 
-const IMAGES_BASE_PATH = 'images/';
+const IMAGES_BASE_PATH = 'https://cdn.jsdelivr.net/gh/wordsbean/bible_images_repo@main/';
 const DATA_BASE_PATH = 'bible_data/';
 
 // WebP 우선 로드 → 실패하면 원본 PNG로 자동 폴백 (변환 스크립트 아직 안 돌린 이미지도 안전하게 표시됨)
@@ -727,6 +727,7 @@ const NATIVE_DATA_LANGS = new Set(['ko','en','ja','zh']); // 원본 데이터에
 const ROMANIZE_LANGS = new Set(['ko','ja','zh']);          // 로마자/병음 데이터가 있는 언어
 
 let selectedLangs = ['ko', 'en'];
+let langCheckOrder = ['ko', 'en']; // 체크박스를 누른 순서 기억용 - 기본값은 selectedLangs 초기값과 동일하게 시작
 let otherLangs = [];  // 사용자가 직접 추가한 언어코드들
 
 /* ---------- 번역 캐시 (기존 tts-module.js 패턴과 동일한 방식) ---------- */
@@ -811,7 +812,7 @@ function langVoice(code){
 /* ---------- 설정 로드/저장 ---------- */
 try {
   const saved = JSON.parse(localStorage.getItem(LANG_PREF_KEY) || 'null');
-  if (saved && saved.length) selectedLangs = saved;
+  if (saved && saved.length) { selectedLangs = saved; langCheckOrder = [...saved]; } // 저장된 체크 순서 그대로 복원
 } catch(e) {}
 try {
   otherLangs = JSON.parse(localStorage.getItem(OTHER_LANG_KEY) || '[]');
@@ -826,18 +827,34 @@ function buildLangGrid(){
     const row = document.createElement('label');
     row.className = 'lang-chk-row';
     row.innerHTML = `<input type="checkbox" value="${l.code}" ${selectedLangs.includes(l.code)?'checked':''}> ${l.name}`;
-    row.querySelector('input').addEventListener('change', onLangSelectionChange);
+    row.querySelector('input').addEventListener('change', (e) => {
+      const code = e.target.value;
+      if (e.target.checked) {
+        if (!langCheckOrder.includes(code)) langCheckOrder.push(code); // 체크한 순서 기억 - 이 순서 그대로 본문에 표시됨
+      } else {
+        langCheckOrder = langCheckOrder.filter(c => c !== code);
+      }
+      onLangSelectionChange();
+    });
     grid.appendChild(row);
   });
   renderOtherLangChips();
 }
 
 function onLangSelectionChange(){
-  const checked = Array.from(document.querySelectorAll('#lang-chk-grid input:checked')).map(c => c.value);
+  const checkedSet = new Set(Array.from(document.querySelectorAll('#lang-chk-grid input:checked')).map(c => c.value));
+  // 기본 순서(langCheckOrder)를 기준으로 하되, 혹시 추적 안 된 항목이 있으면(예외 상황) 뒤에 붙임
+  const checked = langCheckOrder.filter(c => checkedSet.has(c));
+  checkedSet.forEach(c => { if (!checked.includes(c)) checked.push(c); });
   selectedLangs = [...checked, ...otherLangs];
   localStorage.setItem(LANG_PREF_KEY, JSON.stringify(checked));
   rebuildPrimaryLangSelect();
+  refreshBookTitles(); // 목차(사이드바) 책이름/구절 미리보기도 새 언어로 다시 그림 - 이게 빠져있어서 본문만 바뀌고 목차는 그대로였음
   if (currentBook) renderFeed(currentBook);
+  if (currentBook && bookCache[currentBook]) {
+    const v = bookCache[currentBook][activeIndex];
+    if (v) updateHero(v); // 이미지 위 캡션도 같이 갱신
+  }
 }
 
 const PRIMARY_LANG_KEY = 'bible_gallery_primary_lang_v1';
@@ -866,6 +883,26 @@ document.getElementById('primary-lang-select').addEventListener('change', (e) =>
   primaryLang = e.target.value;
   localStorage.setItem(PRIMARY_LANG_KEY, primaryLang);
   refreshBookTitles(); // 대표언어 바뀌면 책이름(목차/헤더/진행률 등)도 그 언어로 갱신
+  if (currentBook && bookCache[currentBook]) {
+    const v = bookCache[currentBook][activeIndex];
+    if (v) updateHero(v);
+  }
+});
+
+// 화면 언어(UI Language)와 콘텐츠 언어(구절 표시 언어)는 원래 독립적인 설정인데,
+// 사용자가 콘텐츠 언어를 한 번도 직접 고른 적 없다면(=PRIMARY_LANG_KEY 저장 이력 없음)
+// 화면 언어를 바꿀 때 "당연히 구절도 그 언어로 보이겠지"라고 기대하는 게 자연스러우므로,
+// 그 경우엔 화면 언어 전환에 맞춰 콘텐츠 언어도 같이 따라가게 함.
+// (한 번이라도 콘텐츠 언어를 직접 고른 사용자의 선택은 절대 덮어쓰지 않음)
+document.addEventListener('uilangchange', (e) => {
+  if (localStorage.getItem(PRIMARY_LANG_KEY)) return; // 사용자가 직접 고른 적 있으면 존중하고 아무것도 안 함
+  const newLang = e.detail && e.detail.lang;
+  if (!newLang || !selectedLangs.includes(newLang) || primaryLang === newLang) return;
+  primaryLang = newLang;
+  const sel = document.getElementById('primary-lang-select');
+  if (sel) sel.value = newLang;
+  refreshBookTitles();
+  buildTOC(); // 좌측 사이드바 책 목록/구절 미리보기도 새 언어 기준으로 다시 그림
   if (currentBook && bookCache[currentBook]) {
     const v = bookCache[currentBook][activeIndex];
     if (v) updateHero(v);
@@ -1093,7 +1130,16 @@ async function ensureBookLoaded(code, themeEl){
     bookCache[code].forEach((v, i) => {
       const sEl = document.createElement('div');
       sEl.className = 'toc-scene';
-      sEl.textContent = `${v.ch}:${v.vs}  ${getTocPreviewText(v)}`;
+      const refPrefix = `${v.ch}:${v.vs}  `;
+      sEl.textContent = refPrefix + getTocPreviewText(v); // 즉시 표시(한국어 원문 기준) - 번역 오는 대로 아래에서 갱신
+      const lang = getBookDisplayLang();
+      if (lang !== 'ko') {
+        // 우측 본문 피드(renderFeed)랑 같은 캐시(tCache)를 공유해서 씀 - 이미 그 책을 열어본 적 있으면
+        // 새로 API 호출 안 하고 캐시에서 바로 가져옴. 처음 여는 책이면 여기서 번역을 새로 요청함.
+        getVerseText(v, lang).then(text => {
+          if (text) sEl.textContent = refPrefix + text.slice(0, 30);
+        });
+      }
       sEl.addEventListener('click', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.toc-scene.current').forEach(el => el.classList.remove('current'));
