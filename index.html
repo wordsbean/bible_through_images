@@ -1171,7 +1171,7 @@ async function openBookFeed(code, jumpToIndex){
   scrollToVerse(idx);
 }
 
-const THUMB_BATCH = 30; // 100개씩 한번에 만들면 첫 로딩때 메인스레드가 막혀서 버튼도 안눌림 - 30개로 축소
+const THUMB_BATCH = 20; // 한 번에 만들 썸네일 개수 - 30개도 느렸다는 피드백 받아서 20개로 더 축소
 
 function renderThumbGrid(code){
   const verses = bookCache[code];
@@ -1234,8 +1234,8 @@ function renderThumbGrid(code){
 // 시편처럼 긴 책을 끝까지 스크롤하면 썸네일 DOM이 수천 개까지 쌓여서 스크롤이 느려짐 →
 // 화면에서 이미 한참 지나간(위로 스크롤아웃된) 오래된 썸네일은 주기적으로 잘라냄.
 // 그냥 지우면 콘텐츠 높이가 줄어서 화면이 위로 확 튀니까, 지운 만큼 scrollTop도 같이 보정함.
-const THUMB_KEEP_MAX = 240; // 이 개수 넘으면 정리 시작 (배치 30개 x 8배치 정도)
-const THUMB_PRUNE_TO = 150; // 정리 후 남길 개수
+const THUMB_KEEP_MAX = 40; // 이 개수 넘으면 바로 정리 (배치 20개 x 2배치 정도 - 240에서 대폭 축소, DOM을 계속 가볍게 유지)
+const THUMB_PRUNE_TO = 20; // 정리 후 남길 개수 - 배치 하나 분량만 남기고 지난 건 계속 지워나감
 function pruneOldThumbs(grid){
   const thumbs = grid.querySelectorAll('.thumb');
   if (thumbs.length <= THUMB_KEEP_MAX) return;
