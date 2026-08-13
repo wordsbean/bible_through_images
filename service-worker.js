@@ -6,7 +6,7 @@
 // - 이미지(jsDelivr CDN, 다른 도메인)도 처음 볼 때 캐싱해두고, 그다음부턴 오프라인에서도 표시됨
 // ============================================================
 
-const CACHE_NAME = 'bible-images-v1';
+const CACHE_NAME = 'bible-images-v2'; // 버전 올릴 때마다 이 숫자를 바꿔야 브라우저가 새 서비스워커로 인식하고 캐시를 갱신함
 
 const CORE_ASSETS = [
   './',
@@ -41,9 +41,29 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return; // POST 등은 그대로 네트워크로
 
+  // HTML(페이지 자체)은 "네트워크 우선" - 새 버전을 배포했는데 캐시 때문에 계속 옛날 화면이 뜨는 걸 방지.
+  // 네트워크 실패(오프라인)할 때만 캐시로 폴백.
+  const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const resClone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // 그 외(이미지, 데이터 JSON 등)는 기존처럼 "캐시 우선" - 자주 안 바뀌는 파일이라 이게 훨씬 빠르고,
+  // 오프라인에서도 즉시 표시됨
   event.respondWith(
     caches.match(req).then((cached) => {
-      if (cached) return cached; // 캐시 우선 - 오프라인에서도 즉시 표시
+      if (cached) return cached;
 
       return fetch(req)
         .then((res) => {
